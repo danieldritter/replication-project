@@ -21,19 +21,20 @@ class Block(Layer):
         self.film = FiLM()
         self.relu = ReLU()
 
-    def call(self, block_input, is_training=True):
+    def call(self, block_input, power_season, is_training=True):
         '''
         Method to pass inputs through a block
 
         Args:
         inputs - input data
+        power_season - the current power and season of the game (used in FiLM)
         '''
         
         gcn_out = self.gcn(block_input)
         yblo = self.bn(gcn_out, training=is_training)
         
         # something about power and season?
-        gamma, beta = film(normalized)
+        gamma, beta = film(power_season)
         zlbo = gamma * yblo + beta
 
         out = self.relu(zlbo) + block_input

@@ -38,14 +38,23 @@ class Encoder(Model):
         The concatenated encoded output of the board inputs and the previous order inputs 
         '''
 
+        power_season = get_power_season(board_inputs)
+
         # applying board layers
         board_out = board_inputs
         for i in range(self.num_board_blocks):
-            board_out = self.board_blocks[i].call(board_out)
+            board_out = self.board_blocks[i].call(board_out, power_season)
 
         # applying board layers
         order_out = order_inputs
         for i in range(self.num_order_blocks):
-            order_out = self.order_blocks[i].call(order_out)
+            order_out = self.order_blocks[i].call(order_out, power_season)
 
         return (board_out, order_out)
+
+def get_power_season(input):
+    '''
+    Function to extract the power and season of the input
+    '''
+
+    return
