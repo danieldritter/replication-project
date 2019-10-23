@@ -2,3 +2,5 @@
 2. LSTM for each province? or same one for all?
 3. How to implement mask?
 4. How does the top ordering work? Bc it goes from top left to bottom right, do you remove all edges that go up or left?
+Notes:
+output dims of encoder is [81, dlbo + dlpo]

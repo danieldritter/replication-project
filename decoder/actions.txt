@@ -1,0 +1,7 @@
+1. Define LSTMCell layer according to eqs 2, 3 in section 4.3. See https://l.messenger.com/l.php?u=https%3A%2F%2Fdiscuss.pytorch.org%2Ft%2Fdifferent-between-lstm-and-lstmcell-function%2F5657%2F4&h=AT2E6OSfXcIJprgNdkmMoSixKOUgjNdARgof9zG-_-xgUb1UEnPbJRNjmP_xpC8CmSPV_J_BttwwtplwoFMQCy5C4HQOZO_q7LdtrgGor72k68BAKvk8FwH3QKzKVw
+
+2. Implement maskedsoftmax
+
+3. Implement attention from each of the 81 provinces (input to decoder is this [81, dlbo + dlpo] matrix)
+
+4. Implement ordering of provinces (snaking)
