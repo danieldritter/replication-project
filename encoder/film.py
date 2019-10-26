@@ -4,7 +4,7 @@ class FiLM(tf.keras.layers.Layer):
 
     def __init__(self):
         super(FiLM,self).__init__()
-        self.lstm1 = tf.keras.layers.LSTM(2048)
+        self.lstm1 = tf.keras.layers.LSTM(256)
         self.d2 = tf.keras.layer.Dense(2)
 
     def call(self,inputs):
