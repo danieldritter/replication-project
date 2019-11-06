@@ -2,7 +2,7 @@ import numpy as np
 import jsonlines
 
 
-def create_province_names():
+def create_province_dict():
     '''
     Function to construct a dictionary of province names
     https://www.lspace.org/games/afpdip/files/abb.html
@@ -67,7 +67,7 @@ def read_data(filepath):
     '''
 
     states, orders, results = [], [], []
-    seasons = []
+    season_names = []
     count = 0
 
 
@@ -82,50 +82,64 @@ def read_data(filepath):
             count += 1
 
     # format structure [province 1 (7 elements), province 2 (7 elems ...)]
-    for s in states:
+    for i in range(len(states)):
+        s = states[i]
 
         # extracting seas on information for FiLM
-        seasons.append(s["name"])
+        season_names.append(s["name"])
 
         # global dictionary for province names
-        province_names = create_province_names()
+        province_dict = create_province_dict()
 
-        # adding unit type and owner of unit
+        # adding unit type andbuilds owner of unit
         units = s["units"]
         for power in units:
             result = units[power]
             for r in result:
                 type, province = r.split()
-                province_names[province]["unit_type"] = type
-                province_names[province]["unit_power"] = power
+                province_dict[province]["unit_type"] = type
+                province_dict[province]["unit_power"] = power
 
         # adding in owner of supply center
         centers = s["centers"]
         for power in centers:
             result = centers[power]
             for r in result:
-                province_names[province]["supply_center_owner"] = power
+                province_dict[province]["supply_center_owner"] = power
 
                 # adding unit type
-                province_names[province]["_unit_type"] = type
-                province_names[province]["unit_power"] = power
+                province_dict[province]["unit_type"] = type
+                province_dict[province]["unit_power"] = power
 
         # adding dislodged information
         retreats = s["retreats"]
         for power in retreats:
             result = retreats[power]
-            for r in result:
-                for unit in r:
-                    print(unit)
-                    # type, province = unit.split()
-                    # province_names[province]["d_unit_type"] = type
-                    # province_names[province]["d_unit_power"] = power
-
+            print(result)
+            for unit in result:
+                print(unit)
+                type, province = unit.split()
+                province_dict[province]["d_unit_type"] = type
+                province_dict[province]["d_unit_power"] = power
 
         # adding buildable/removable ??? what is this!
-
-    return states, orders, results, seasons, province_names
+        for power_name in s["builds"]:
+            power = power_name[:3]
+            power_builds = s["builds"][power_name]
+            # make supply centers buildable
+            if power_builds["count"] == 1:
+                for prov in province_dict:
+                    if province_dict[prov]["supply_center_owner"] == power:
+                        province_dict[prov]["buildable_removable"] = "buildable"
+            # make provinces with units removable
+            elif power_builds["count"] == -1:
+                for prov in province_dict:
+                    if province_dict[prov] == power:
+                        if province_dict[prov]["unit_type"] != None:
+                            province_dict[prov]["buildable_removable"] = "removable"
+            
+    return states, orders, results, season_names, province_dict
 
 
 if __name__ == "__main__":
-    s, o, r, seasons, provinces_result = read_data("/media/daniel/DATA/diplomacy_data/standard_no_press.jsonl")
+    s, o, r, seasons, provinces_result = read_data("data/standard_no_press.jsonl")
