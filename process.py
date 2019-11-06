@@ -129,7 +129,7 @@ def read_data(filepath):
             # make supply centers buildable
             if power_builds["count"] == 1:
                 for prov in province_dict:
-                    if province_dict[prov] == power:
+                    if province_dict[prov]["supply_center_owner"] == power:
                         province_dict[prov]["buildable_removable"] = "buildable"
             # make provinces with units removable
             elif power_builds["count"] == -1:
