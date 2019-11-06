@@ -3,4 +3,8 @@
 3. How to implement mask?
 4. How does the top ordering work? Bc it goes from top left to bottom right, do you remove all edges that go up or left?
 Notes:
-output dims of encoder is [81, dlbo + dlpo]
+output dims of encoder is [81, dLbo + dLpo]
+
+
+5. "untrained model with a masked decoder performs better than the random model, which
+suggests the effectiveness of masking out invalid order" ==> is this only true because it has higher chance of making actual moves?
