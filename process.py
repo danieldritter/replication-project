@@ -14,7 +14,7 @@ def create_province_names():
 
     with open("province_types.txt") as g:
         t_lines = g.readlines()
-    
+
     for i in range(len(p_lines)):
         prov = p_lines[i].upper().strip()
         provinces[prov] = {}
@@ -37,7 +37,7 @@ def create_province_names():
             provinces[prov]["sc_owner"] = "TUR"
         else:
             provinces[prov]["sc_owner"] = None
-        
+
         # providing area type
         if t == "l":
             provinces[prov]["area_type"] = "Land"
@@ -63,14 +63,14 @@ def read_data(filepath):
     Phases is a list of dictionaries where each dictionary has ["name", "state", "orders", "results", "messages"]
 
     "name" has Season (F, W, or S) - Year (0000) - Phase (M (movement), A (adjustment), R (retreat))
-    "state" dictionary of dictionaries containing 
+    "state" dictionary of dictionaries containing
     '''
-    
+
     states, orders, results = [], [], []
     seasons = []
     count = 0
 
-    
+
     with jsonlines.open(filepath) as file:
         for game in file:
             for phase in game["phases"]:
@@ -80,9 +80,10 @@ def read_data(filepath):
             if count == 10:
                 break
             count += 1
-    
+
     # format structure [province 1 (7 elements), province 2 (7 elems ...)]
     for s in states:
+
         # extracting seas on information for FiLM
         seasons.append(s["name"])
 
@@ -103,10 +104,10 @@ def read_data(filepath):
         for power in centers:
             result = centers[power]
             for r in result:
-                province_names[province]["supply_center_owner"] = power 
+                province_names[province]["supply_center_owner"] = power
 
                 # adding unit type
-                province_names[province]["unit_type"] = type
+                province_names[province]["_unit_type"] = type
                 province_names[province]["unit_power"] = power
 
         # adding dislodged information
@@ -116,17 +117,15 @@ def read_data(filepath):
             for r in result:
                 for unit in r:
                     print(unit)
-                    type, province = unit.split()
-                    province_names[province]["d_unit_type"] = type
-                    province_names[province]["d_unit_power"] = power
+                    # type, province = unit.split()
+                    # province_names[province]["d_unit_type"] = type
+                    # province_names[province]["d_unit_power"] = power
 
 
         # adding buildable/removable ??? what is this!
 
-    return states, orders, results, seasons, province_names   
+    return states, orders, results, seasons, province_names
 
 
 if __name__ == "__main__":
-    s, o, r, seasons, provinces_result = read_data("data/standard_no_press.jsonl")   
-    
-
+    s, o, r, seasons, provinces_result = read_data("/media/daniel/DATA/diplomacy_data/standard_no_press.jsonl")
