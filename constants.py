@@ -4,6 +4,7 @@ dLbo = 64
 dLpo = 64
 H_ENC_COLS = dLbo + dLpo
 NUM_PLACES = 81 # note: 75 provinces + 6 coasts
+ORDER_VOCABULARY = 13042
 
 # Predefined location order
 STANDARD_TOPO_LOCS = ['YOR', 'EDI', 'LON', 'LVP', 'NTH', 'WAL', 'CLY',
@@ -24,3 +25,5 @@ COASTS = ["BUL/EC", "BUL/SC", "SPA/NC", "SPA/SC", "STP/NC", "STP/SC"]
 WATER = ["ADR", "AEG", "BAL", "BAR", "BLA", "EAS", "ENG", "BOT", 
          "GOL", "HEL", "ION", "IRI", "MID", "NAT", "NTH", "NRG", 
          "SKA", "TYN", "WES"]
+
+OG_SUPPLY_CENTERS = {}
