@@ -9,8 +9,17 @@ from diplomacy_research.models import state_space
 adj_matrix = state_space.get_adjacency_matrix("standard")
 print(adj_matrix)
 
-# creating multiple agents
+# grabbing ordering of provinces
+ordering = state_space.STANDARD_TOPO_LOCS
+print(ordering)
 
+# province types
+coasts = ["BUL/EC", "BUL/SC", "SPA/NC", "SPA/SC", "STP/NC", "STP/SC"]
+water = ["ADR", "AEG", "BAL", "BAR", "BLA", "EAS", "ENG", "BOT", 
+         "GOL", "HEL", "ION", "IRI", "MID", "NAT", "NTH", "NRG", 
+         "SKA", "TYN", "WES"]
+
+# creating multiple agents
 
 game = Game()
 while not game.is_game_done:

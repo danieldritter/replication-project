@@ -1,5 +1,7 @@
 import numpy as np
 import jsonlines
+from test import ordering
+from constants import COASTS, WATER
 
 
 def create_province_dict():
@@ -8,46 +10,17 @@ def create_province_dict():
     https://www.lspace.org/games/afpdip/files/abb.html
     '''
 
-    provinces = {}
-    with open("province_titles.txt") as f:
-        p_lines = f.readlines()
-
-    with open("province_types.txt") as g:
-        t_lines = g.readlines()
-
-    for i in range(len(p_lines)):
-        prov = p_lines[i].upper().strip()
+    for i in ordering:
+        prov = p_lines[i]
         provinces[prov] = {}
 
-        # providing supply center owners
-        t = t_lines[i]
-        if t == "A":
-            provinces[prov]["sc_owner"] = "AUS"
-        elif t == "E":
-            provinces[prov]["sc_owner"] = "ENG"
-        elif t == "F":
-            provinces[prov]["sc_owner"] = "FRA"
-        elif t == "G":
-            provinces[prov]["sc_owner"] = "GER"
-        elif t == "I":
-            provinces[prov]["sc_owner"] = "ITA"
-        elif t == "R":
-            provinces[prov]["sc_owner"] = "RUS"
-        elif t == "T":
-            provinces[prov]["sc_owner"] = "TUR"
-        else:
-            provinces[prov]["sc_owner"] = None
-
         # providing area type
-        if t == "l":
-            provinces[prov]["area_type"] = "Land"
-        elif t == "w":
-            provinces[prov]["area_type"] = "Water"
-        # idk if this is actually correct
-        elif t == "x":
-            provinces[prov]["area_type"] = "Coast"
+        if prov in COASTS:
+            provinces[prov]["area_type"] = "coast"
+        elif prov in WATER:
+            provinces[prov]["area_type"] = "water"
         else:
-            provinces[prov]["area_type"] = None
+            provinces[prov]["area_type"] = "land"
 
     return provinces
 
