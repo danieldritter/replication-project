@@ -1,7 +1,6 @@
 import numpy as np
 import jsonlines
-from test import ordering
-from constants import COASTS, WATER
+from constants import COASTS, WATER, ORDERING, OG_SUPPLY_CENTERS
 
 
 def create_province_dict():
@@ -10,39 +9,35 @@ def create_province_dict():
     https://www.lspace.org/games/afpdip/files/abb.html
     '''
 
-    for i in ordering:
-        prov = p_lines[i]
-        provinces[prov] = {}
+    province_dict = {}
+
+    for prov in ORDERING:
+        province_dict[prov] = {}
 
         # providing area type
         if prov in COASTS:
-            provinces[prov]["area_type"] = "coast"
+            province_dict[prov]["area_type"] = "coast"
         elif prov in WATER:
-            provinces[prov]["area_type"] = "water"
+            province_dict[prov]["area_type"] = "water"
         else:
-            provinces[prov]["area_type"] = "land"
+            province_dict[prov]["area_type"] = "land"
 
-    return provinces
+    return province_dict
 
 
 def read_data(filepath):
     '''
     Function to read the json data
 
-    Data Format:
-    Each game is a dictionary of ["id", "map", "rules", "phases"]
+    Keyword Args:
+    filepath - the file to read from
 
-    We only really consider phases:
-    Phases is a list of dictionaries where each dictionary has ["name", "state", "orders", "results", "messages"]
-
-    "name" has Season (F, W, or S) - Year (0000) - Phase (M (movement), A (adjustment), R (retreat))
-    "state" dictionary of dictionaries containing
+    Returns:
+    an arry of states, orders, and results from the json
     '''
 
     states, orders, results = [], [], []
-    season_names = []
     count = 0
-
 
     with jsonlines.open(filepath) as file:
         for game in file:
@@ -50,9 +45,39 @@ def read_data(filepath):
                 states.append(phase["state"])
                 orders.append(phase["orders"])
                 results.append(phase["results"])
-            if count == 10:
+            if count == 20:
                 break
             count += 1
+    
+    return states, orders, results
+
+def parse_states(states):
+    '''
+    Function to parse the board state information
+
+    Keyword Args:
+    the states list passed from read_data
+
+    Returns:
+    a dictionary containing the board states of each phase and a list of the 
+    season names
+
+    --------------------------------------------------------------------------
+    Data Format:
+    Each game is a dictionary of ["id", "map", "rules", "phases"]
+
+    We only really consider phases:
+    Phases is a list of dictionaries where each dictionary has 
+    ["name", "state", "orders", "results", "messages"]
+
+    "name" has Season (F, W, or S) - Year (0000) - Phase (M (movement), A (adjustment), 
+    R (retreat))
+    "state" dictionary of dictionaries containing
+    --------------------------------------------------------------------------
+    '''
+
+    season_names = []
+    board_state_list = []
 
     # format structure [province 1 (7 elements), province 2 (7 elems ...)]
     for i in range(len(states)):
@@ -88,9 +113,7 @@ def read_data(filepath):
         retreats = s["retreats"]
         for power in retreats:
             result = retreats[power]
-            print(result)
             for unit in result:
-                print(unit)
                 type, province = unit.split()
                 province_dict[province]["d_unit_type"] = type
                 province_dict[province]["d_unit_power"] = power
@@ -102,17 +125,28 @@ def read_data(filepath):
             # make supply centers buildable
             if power_builds["count"] == 1:
                 for prov in province_dict:
-                    if province_dict[prov]["supply_center_owner"] == power:
-                        province_dict[prov]["buildable_removable"] = "buildable"
+                    # checking if a supply centers
+                    if "supply_center_owner" in province_dict[prov]:
+                        sc_owner = province_dict[prov]["supply_center_owner"]
+                        # checking for correct power
+                        if sc_owner == power:
+                            print("hit")
+                            # only for original supply centers
+                            if prov in  OG_SUPPLY_CENTERS[sc_owner]:
+                                province_dict[prov]["buildable_removable"] = "buildable"
+
             # make provinces with units removable
             elif power_builds["count"] == -1:
                 for prov in province_dict:
                     if province_dict[prov] == power:
                         if province_dict[prov]["unit_type"] != None:
                             province_dict[prov]["buildable_removable"] = "removable"
+        board_state_list.append(province_dict)
             
-    return states, orders, results, season_names, province_dict
+    return board_state_list, season_names
 
 
 if __name__ == "__main__":
-    s, o, r, seasons, provinces_result = read_data("data/standard_no_press.jsonl")
+    states, orders, results = read_data("data/standard_no_press.jsonl")
+    board_states, season_names = parse_states(states)
+    # print(board_states)
