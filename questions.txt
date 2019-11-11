@@ -8,3 +8,7 @@ output dims of encoder is [81, dLbo + dLpo]
 
 5. "untrained model with a masked decoder performs better than the random model, which
 suggests the effectiveness of masking out invalid order" ==> is this only true because it has higher chance of making actual moves?
+
+
+11/10 questions for Nishanth:
+1. 

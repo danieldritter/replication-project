@@ -3,6 +3,7 @@ import numpy as np
 import tensorflow as tf
 from tf.keras import Model
 from tf.keras.optimizers import Adam
+from decoder.mask import masked_softmax
 
 class Decoder(Model):
     '''
@@ -17,13 +18,13 @@ class Decoder(Model):
         '''
         super(Model, self).__init__()
 
-        self.h_dec_size = 100 # TODO fix
+        self.h_dec_size = constants.ORDER_VOCABULARY # TODO fix
         self.optimizer = Adam(0.001)
         self.lstm = tf.keras.layers.LSTMCell(units=self.h_dec_size, activation=None) # initialize
 
         # define LSTM layer here
 
-    def call(self, h_enc):
+    def call(self, h_enc, mask):
         '''
         Call method for decoder
 
@@ -41,9 +42,9 @@ class Decoder(Model):
         for province in h_enc:
             # province is h^i^t_enc in paper, 
             previous_state = tf.concat(province, order)
-            h_dec = self.lstm(h_dec, province) 
-            order = masked_softmax(h_dec) # TODO: implement in mask.py
-
+            h_dec = self.lstm(h_dec, previous_state) 
+            order = masked_softmax(h_dec, mask) # TODO: implement in mask.py
+            orders_list.append(order)
             # LSTMCell stuff
                 # make sure to append previous order with province (province is h^i^t_enc in paper)
             # also record orders output by each loop through (i.e. for each province)
@@ -51,12 +52,5 @@ class Decoder(Model):
 
         return orders_list
 
-    def loss():
-        pass
-    
-def get_power_season(input):
-    '''
-    Function to extract the power and season of the input
-    '''
-
-    return
+    def loss(self, probs, labels):
+        return tf.reduce_sum(tf.keras.losses.sparse_categorical_crossentropy(labels, probs))

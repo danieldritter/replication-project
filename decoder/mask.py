@@ -9,4 +9,4 @@ def masked_softmax(arr, mask):
     Returns:
     Softmax'ed result of applying given mask to h_dec
     '''
-    tf.nn.softmax(tf.math.multiply(h_dec, mask))
+    tf.nn.softmax(tf.math.multiply(arr, mask))
