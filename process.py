@@ -38,7 +38,7 @@ def read_data(filepath):
 
     states, orders, results = [], [], []
     count = 0
-
+    # TODO: Probably need to separate by turn here
     with jsonlines.open(filepath) as file:
         for game in file:
             for phase in game["phases"]:
@@ -48,7 +48,7 @@ def read_data(filepath):
             if count == 20:
                 break
             count += 1
-    
+
     return states, orders, results
 
 def parse_states(states):
@@ -59,7 +59,7 @@ def parse_states(states):
     the states list passed from read_data
 
     Returns:
-    a dictionary containing the board states of each phase and a list of the 
+    a dictionary containing the board states of each phase and a list of the
     season names
 
     --------------------------------------------------------------------------
@@ -67,10 +67,10 @@ def parse_states(states):
     Each game is a dictionary of ["id", "map", "rules", "phases"]
 
     We only really consider phases:
-    Phases is a list of dictionaries where each dictionary has 
+    Phases is a list of dictionaries where each dictionary has
     ["name", "state", "orders", "results", "messages"]
 
-    "name" has Season (F, W, or S) - Year (0000) - Phase (M (movement), A (adjustment), 
+    "name" has Season (F, W, or S) - Year (0000) - Phase (M (movement), A (adjustment),
     R (retreat))
     "state" dictionary of dictionaries containing
     --------------------------------------------------------------------------
@@ -142,11 +142,11 @@ def parse_states(states):
                         if province_dict[prov]["unit_type"] != None:
                             province_dict[prov]["buildable_removable"] = "removable"
         board_state_list.append(province_dict)
-            
+
     return board_state_list, season_names
 
 
 if __name__ == "__main__":
-    states, orders, results = read_data("data/standard_no_press.jsonl")
+    states, orders, results = read_data("/media/daniel/DATA/diplomacy_data/standard_no_press.jsonl")
     board_states, season_names = parse_states(states)
-    # print(board_states)
+    print(len(board_states))
