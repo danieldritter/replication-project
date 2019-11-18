@@ -1,9 +1,9 @@
 import tensorflow as tf 
-from tf.keras.layers import ReLU
-from tf.keras.layers import BatchNormalization
-from tf.keras.layers import Layer
+from tensorflow.keras.layers import ReLU
+from tensorflow.keras.layers import BatchNormalization
+from tensorflow.keras.layers import Layer
 
-from film import FiLM
+from . import film
 
 class Block(Layer):
     '''
@@ -16,9 +16,9 @@ class Block(Layer):
         Initializer for a Block object
         '''
         
-        self.gcn = GCN()
+        self.gcn = lambda x: x
         self.bn = BatchNormalization(axis=1, epsilon=0.0001)
-        self.film = FiLM()
+        self.film = film.FiLM()
         self.relu = ReLU()
 
     def call(self, block_input, power_season, is_training=True):
