@@ -1,0 +1,17 @@
+1. Using the reward function, create labels for the value of each state (phase) in each game.
+    a. Apply the reward function to all states in a game
+    b. Run the discount function to get the values for each state (cumulative disc reward)
+    c. Add that to the dictionary board_dict_list in process.py
+        i. key: "value"
+           value: {country: value(country) for all countries}
+
+2. Write the critic:
+    a. Input: a state (e.g. one phase, 81 * 35 vector)
+    b. Output: (7,) vector representing the value for each power.
+
+3. Pretrain the critic with each game; labels are the values computed in task 1.
+
+4. Write a loss function for the actor/encoder using 15-step return.
+
+5. Write the while loop that interfaces with the engine,
+    combines actor/critic loss, optimizes gradients etc.

@@ -9,7 +9,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 class Actor(tf.keras.Model):
 
-    def __init__(self, state_size, hidden_size, num_actions):
+    def __init__(self, state_size, num_actions):
         """
         The Actor class that inherits from tf.keras.Model.
 
@@ -23,12 +23,13 @@ class Actor(tf.keras.Model):
 
         super(Actor, self).__init__()
 
+        self.hidden_size = 32
         self.num_actions = num_actions
         self.W1 = tf.Variable(
-            tf.random.normal([state_size, hidden_size], stddev=0.01))
-        self.b1 = tf.Variable(tf.random.normal([hidden_size], stddev=0.01))
+            tf.random.normal([state_size, self.hidden_size], stddev=0.01))
+        self.b1 = tf.Variable(tf.random.normal([self.hidden_size], stddev=0.01))
         self.W2 = tf.Variable(
-            tf.random.normal([hidden_size, num_actions], stddev=0.01))
+            tf.random.normal([self.hidden_size, num_actions], stddev=0.01))
         self.b2 = tf.Variable(tf.random.normal([num_actions], stddev=0.01))
 
     @tf.function
@@ -70,7 +71,7 @@ class Actor(tf.keras.Model):
 
 class Critic(tf.keras.Model):
 
-    def __init__(self, state_size, hidden_size):
+    def __init__(self, state_size):
         """
         The Critic class that inherits from tf.keras.Model.
 
@@ -83,12 +84,13 @@ class Critic(tf.keras.Model):
         """
         super(Critic, self).__init__()
 
+        self.hidden_size = 32
         # Initialize Weights and Biases for Critic Network
         self.W1 = tf.Variable(tf.random.normal(
-            [state_size, hidden_size], stddev=.01))
-        self.b1 = tf.Variable(tf.random.normal([hidden_size], stddev=.01))
+            [state_size, self.hidden_size], stddev=.01))
+        self.b1 = tf.Variable(tf.random.normal([self.hidden_size], stddev=.01))
         self.W2 = tf.Variable(tf.random.normal(
-            [hidden_size, 1], stddev=.01))
+            [self.hidden_size, 1], stddev=.01))
         self.b2 = tf.Variable(tf.random.normal([1], stddev=.01))
 
     @tf.function
@@ -132,10 +134,9 @@ class A2C:
     def __init__(self, env):
         state_size = env.observation_space.shape[0]
         num_actions = env.action_space.n
-        hidden_size = 32
 
-        self.actor = Actor(state_size, hidden_size, num_actions)
-        self.critic = Critic(state_size, hidden_size)
+        self.actor = Actor(state_size, num_actions)
+        self.critic = Critic(state_size)
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
         self.env = env
         self.gamma = .99
