@@ -324,7 +324,7 @@ def construct_prev_orders_matrix(prev_orders_game_state):
                 row_part6 = UNIT_POWER[None]
             matrix[i] = row_part1 + row_part2 + row_part3 + row_part4 + row_part5 + row_part6
         phase_matrices.append(matrix)
-    return phase_matrices
+    return np.array(phase_matrices)
 
 def get_data(filepath):
     states, orders, results = read_data(filepath)
@@ -337,5 +337,6 @@ def get_data(filepath):
     return state_inputs, prev_order_inputs, season_names
 
 if __name__ == "__main__":
-    print(get_data("data/standard_no_press.jsonl"))
+    state_inputs, prev_order_inputs, season_names = get_data("data/standard_no_press.jsonl")
+    print(np.shape(state_inputs))
 
