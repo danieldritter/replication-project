@@ -16,9 +16,9 @@ class Decoder(Model):
 
         Args:
         '''
-        super(Model, self).__init__()
+        super(Decoder, self).__init__()
 
-        self.h_dec_size = constants.ORDER_VOCABULARY # TODO fix
+        self.h_dec_size = constants.ORDER_VOCABULARY_SIZE # TODO fix
         self.optimizer = Adam(0.001)
         self.lstm = tf.keras.layers.LSTMCell(units=self.h_dec_size, activation=None) # initialize
 
@@ -38,7 +38,7 @@ class Decoder(Model):
         '''
 
         orders_list = []
-        h_dec = tf.Variable(tf.random.normal([constants.NUM_PLACES, self.h_dec_size], stddev=0.1,dtype=tf.float32)) # initial decoder state - should this be a variable?
+        h_dec = tf.Variable(tf.random.normal([self.h_dec_size], stddev=0.1,dtype=tf.float32)) # initial decoder state - should this be a variable?
         for province in h_enc:
             # province is h^i^t_enc in paper, 
             previous_state = tf.concat(province, order)
