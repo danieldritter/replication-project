@@ -44,38 +44,38 @@ OG_SUPPLY_CENTERS = {
 
 # mappings for constructing data for board states
 UNIT_TYPE = {
-    "A": 0,
-    "F": 1,
-    None: 2
+    "A": [1, 0, 0],
+    "F": [0, 1, 0],
+    None:[0, 0, 1]
 }
 
 UNIT_POWER = {
-    "AUSTRIA": 0,
-    "ENGLAND": 1,
-    "FRANCE": 2,
-    "GERMANY": 3,
-    "ITALY": 4,
-    "RUSSIA": 5,
-    "TURKEY": 6,
-    None: 7
+    "AUSTRIA": [1, 0, 0, 0, 0, 0, 0, 0],
+    "ENGLAND": [0, 1, 0, 0, 0, 0, 0, 0],
+    "FRANCE": [0, 0, 1, 0, 0, 0, 0, 0],
+    "GERMANY": [0, 0, 0, 1, 0, 0, 0, 0],
+    "ITALY": [0, 0, 0, 0, 1, 0, 0, 0],
+    "RUSSIA": [0, 0, 0, 0, 0, 1, 0, 0],
+    "TURKEY": [0, 0, 0, 0, 0, 0, 1, 0],
+    None: [0, 0, 0, 0, 0, 0, 0, 1]
 }
 
 BUILDABLE_REMOVABLE = {
-    "buildable": 0,
-    "removable": 1
+    "buildable": [1, 0],
+    "removable": [0, 1]
 }
 
 AREA_TYPE = {
-    "land": 0,
-    "water": 1, 
-    "coast": 2
+    "land": [1, 0, 0],
+    "water": [0, 1, 0], 
+    "coast": [0, 0, 1]
 }
 
 # mappings for constructing data for previous orders
 ORDER_TYPE = {
-    "H": 0,
-    "S": 1,
-    "C": 2,
-    "-": 3,
-    None: 4
+    "H": [1, 0, 0, 0, 0],
+    "S": [0, 1, 0, 0, 0],
+    "C": [0, 0, 1, 0, 0],
+    "-": [0, 0, 0, 1, 0],
+    None: [0, 0, 0, 0, 1]
 }
