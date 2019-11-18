@@ -41,3 +41,41 @@ OG_SUPPLY_CENTERS = {
     "NEUTRAL": ["NWY", "SWE", "DEN", "BEL", "HOL", "SPA", "POR", 
                 "TUN", "SER", "RUM", "BUL", "GRE"]
 }
+
+# mappings for constructing data for board states
+UNIT_TYPE = {
+    "A": 0,
+    "F": 1,
+    None: 2
+}
+
+UNIT_POWER = {
+    "AUSTRIA": 0,
+    "ENGLAND": 1,
+    "FRANCE": 2,
+    "GERMANY": 3,
+    "ITALY": 4,
+    "RUSSIA": 5,
+    "TURKEY": 6,
+    None: 7
+}
+
+BUILDABLE_REMOVABLE = {
+    "buildable": 0,
+    "removable": 1
+}
+
+AREA_TYPE = {
+    "land": 0,
+    "water": 1, 
+    "coast": 2
+}
+
+# mappings for constructing data for previous orders
+ORDER_TYPE = {
+    "H": 0,
+    "S": 1,
+    "C": 2,
+    "-": 3,
+    None: 4
+}
