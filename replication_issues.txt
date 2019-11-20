@@ -1,0 +1,5 @@
+Replication Issues:
+-------------------
+
+1. Lack of clarity in decoder inputs; what is the initial state to the first LSTM cell of the topological ordering?
+2. What is the critic network?
