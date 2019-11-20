@@ -4,7 +4,7 @@ from tensorflow.keras import Model
 from tensorflow.keras.losses import sparse_categorical_crossentropy
 from tensorflow.keras.optimizers import Adam
 
-import process
+from data import process
 from SL.encoder.encoder import Encoder
 from SL.decoder.decoder import Decoder
 from constants.constants import SEASON, UNIT_POWER
