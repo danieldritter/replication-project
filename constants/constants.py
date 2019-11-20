@@ -4,8 +4,8 @@ from diplomacy_research.models import state_space
 # grabbing adjacency matrix as integers
 A = state_space.get_adjacency_matrix("standard")
 
-dLbo = 64
-dLpo = 64
+dLbo = 35
+dLpo = 40
 H_ENC_COLS = dLbo + dLpo
 NUM_PLACES = 81 # note: 75 provinces + 6 coasts
 ORDER_VOCABULARY_SIZE = 13042
