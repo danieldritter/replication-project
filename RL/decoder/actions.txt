@@ -1,0 +1,23 @@
+1. Define LSTMCell layer according to eqs 2, 3 in section 4.3. See https://l.messenger.com/l.php?u=https%3A%2F%2Fdiscuss.pytorch.org%2Ft%2Fdifferent-between-lstm-and-lstmcell-function%2F5657%2F4&h=AT2E6OSfXcIJprgNdkmMoSixKOUgjNdARgof9zG-_-xgUb1UEnPbJRNjmP_xpC8CmSPV_J_BttwwtplwoFMQCy5C4HQOZO_q7LdtrgGor72k68BAKvk8FwH3QKzKVw
+
+2. Implement maskedsoftmax
+    don't mask out provinces you're not in control of? 
+    because you want to predict sorta what they're gonna do to inform your decision.
+
+    11/6
+    Let all_orders be boolean array for all possible orders (something like dims [1600]).
+    Let mask basically 0 out the values in all_orders for all invalid orders.
+        Invalid orders are determined by the possible_orders proto, so we can do like a
+            "all_orders not in possible_orders = 0" sorta thing.
+
+    Then, our softmax finds probabilities for doing each of the valid orders.
+     
+
+3. Implement attention from each of the 81 provinces (input to decoder is this [81, dlbo + dlpo] matrix)
+
+4. Implement ordering of provinces (snaking)
+
+
+5. different things to try:
+    a. do we train with p = only winning players in each game or all players for each game?
+    b. implementing attention soft vs hard?

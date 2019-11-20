@@ -10,10 +10,3 @@ def masked_softmax(arr, mask):
     Softmax'ed result of applying given mask to h_dec
     '''
     tf.nn.softmax(tf.math.multiply(arr, mask))
-
-def create_mask():
-    """
-    TODO:
-    as a function of ???
-    """
-    pass

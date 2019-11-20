@@ -6,145 +6,19 @@ import tensorflow as tf
 
 # Killing optional CPU driver warnings
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-
-class Actor(tf.keras.Model):
-
-    def __init__(self, state_size, num_actions):
-        """
-        The Actor class that inherits from tf.keras.Model.
-
-        When actor's forward pass is called, it will output the
-        probabilities of taking each action in a given state.
-
-        :param state_size: number of parameters that define the state.
-        :param hidden_size: hyperparameter for fully connected layer for computing action probabilities.
-        :param num_actions: number of actions in an environment.
-        """
-
-        super(Actor, self).__init__()
-
-        self.hidden_size = 32
-        self.num_actions = num_actions
-        self.W1 = tf.Variable(
-            tf.random.normal([state_size, self.hidden_size], stddev=0.01))
-        self.b1 = tf.Variable(tf.random.normal([self.hidden_size], stddev=0.01))
-        self.W2 = tf.Variable(
-            tf.random.normal([self.hidden_size, num_actions], stddev=0.01))
-        self.b2 = tf.Variable(tf.random.normal([num_actions], stddev=0.01))
-
-    @tf.function
-    def call(self, state):
-        """
-        Performs the forward pass on a batch of states for the Actor,
-        returning a probability distribution across actions for each state as a
-        [episode_length, num_actions] dimensioned array.
-
-        :param state: An [episode_length, state_size] dimensioned array
-        representing history of states of an episode
-        :return: probability distribution across actions for each state
-        as a [episode_length, num_actions] dimensioned array.
-        """
-        logits = tf.nn.relu(tf.matmul(state, self.W1) + self.b1)
-        return tf.nn.softmax(tf.matmul(logits, self.W2) + self.b2)
-
-    @tf.function
-    def loss_function(self, reward, next_state_value, state_value, action_prob, gamma):
-        """
-        Calculates the Actor model's loss.
-
-        :param discounted_rewards: history of rewards throughout a complete
-        episode (represented as an [episode_length] array)
-        :param state_values: history of estimated state values from the critic
-        throughout a complete episode (represented as an [episode_length] array)
-        :param chosen_actor_probs: history of action probabilities for the
-        chosen action of each step in a complete episode (represented as an
-        [episode_length] array)
-        :return: actor loss, a scalar
-        """
-        advantage = reward + gamma * next_state_value - state_value
-        actor_loss = - \
-            tf.reduce_sum(tf.math.log(action_prob) *
-                          tf.stop_gradient(advantage))
-
-        return actor_loss
-
-
-class Critic(tf.keras.Model):
-
-    def __init__(self, state_size):
-        """
-        The Critic class that inherits from tf.keras.Model.
-
-        When Critic's forward pass is called, it will output its estimated value
-        for a given state.
-
-        :param state_size: number of parameters that define the state.
-        :param hidden_size: hyperparameter for fully connected layer for
-        computing state values.
-        """
-        super(Critic, self).__init__()
-
-        self.hidden_size = 32
-        # Initialize Weights and Biases for Critic Network
-        self.W1 = tf.Variable(tf.random.normal(
-            [state_size, self.hidden_size], stddev=.01))
-        self.b1 = tf.Variable(tf.random.normal([self.hidden_size], stddev=.01))
-        self.W2 = tf.Variable(tf.random.normal(
-            [self.hidden_size, 1], stddev=.01))
-        self.b2 = tf.Variable(tf.random.normal([1], stddev=.01))
-
-    @tf.function
-    def call(self, state):
-        """
-        Performs the forward pass on a batch of states for the Critic,
-        returning a [episode_length] dimensioned array of estimated values
-        (one value for each state)
-        :param state: An [episode_length, state_size] dimensioned array
-        representing history of states of an episode
-        :return: estimated values of each inputted state as an [episode_length]
-        dimensioned array.
-        """
-        logits = tf.nn.relu(tf.matmul(state, self.W1) + self.b1)
-        value = tf.squeeze(tf.matmul(logits, self.W2) + self.b2)
-        return value
-
-    @tf.function
-    def loss_function(self, reward, next_state_value, state_value, gamma):
-        """
-        Calculates the Critic model's loss.
-
-        :param discounted_rewards: history of rewards throughout a complete
-        episode (represented as an [episode_length] array)
-        :param state_values: history of estimated state values from the critic
-        throughout a complete episode (represented as an [episode_length] array)
-        :return: critic loss, a scalar
-        """
-        advantage = reward + gamma * next_state_value - state_value
-        return tf.reduce_sum(tf.square(advantage))
-
-
-def calc_entropy(policy):
-    entropy = 0.0
-    for i in range(len(policy)):
-        entropy -= policy[i] * tf.math.log(policy[i])
-    return entropy
-
-
 class A2C:
-    def __init__(self, env):
-        state_size = env.observation_space.shape[0]
-        num_actions = env.action_space.n
-
-        self.actor = Actor(state_size, num_actions)
-        self.critic = Critic(state_size)
-        self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
-        self.env = env
-        self.gamma = .99
+    def __init__(self):
+        """
+        Initialize Actor, Critic model.
+        """
+        pass
 
     def train(self, num_episodes):
         """
         Training loop for A2C. Generates a complete trajectory for one episode, and then updates both the
         actor and critic networks using that trajectory
+
+        while loop that interfaces with the engine, combines actor/critic loss, optimizes gradients etc.
 
         :param num_episodes: number of episodes to train the networks for
 
@@ -188,14 +62,3 @@ class A2C:
                 final_average.append(tot_rwd)
         print(np.mean(final_average))
         return total_rewards
-
-
-
-def main():
-    env = gym.make("CartPole-v1")
-    agent = A2C(env)
-    agent.train(1000)
-
-
-if __name__ == '__main__':
-    main()
