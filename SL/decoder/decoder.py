@@ -1,9 +1,8 @@
-import constants
+from constants import constants 
 import numpy as np
 import tensorflow as tf
-from tf.keras import Model
-from tf.keras.optimizers import Adam
-from decoder.mask import masked_softmax
+from tensorflow.keras import Model
+from SL.decoder.mask import masked_softmax
 
 class Decoder(Model):
     '''
@@ -19,10 +18,11 @@ class Decoder(Model):
         super(Decoder, self).__init__()
 
         self.h_dec_size = constants.ORDER_VOCABULARY_SIZE # TODO fix
-        self.optimizer = Adam(0.001)
+        # self.optimizer = Adam(0.001)
+
+        # LSTM layer here
         self.lstm = tf.keras.layers.LSTMCell(units=self.h_dec_size, activation=None) # initialize
 
-        # define LSTM layer here
 
     def call(self, h_enc, mask):
         '''
@@ -37,20 +37,22 @@ class Decoder(Model):
         The concatenated encoded output of the board inputs and the previous order inputs 
         '''
 
+        # accumulating taken orders
         orders_list = []
+        
+        # initializing initial state passed to decoder
         h_dec = tf.Variable(tf.random.normal([self.h_dec_size], stddev=0.1,dtype=tf.float32)) # initial decoder state - should this be a variable?
+        
         for province in h_enc:
+        
             # province is h^i^t_enc in paper, 
-            previous_state = tf.concat(province, order)
-            h_dec = self.lstm(h_dec, previous_state) 
-            order = masked_softmax(h_dec, mask) # TODO: implement in mask.py
-            orders_list.append(order)
-            # LSTMCell stuff
-                # make sure to append previous order with province (province is h^i^t_enc in paper)
-            # also record orders output by each loop through (i.e. for each province)
+            # valid_orders = masked_softmax(h_dec, mask) # TODO: implement in mask.py 
+            valid_orders = h_dec
 
+            # make sure to append previous order with province (province is h^i^t_enc in paper)
+            # also record orders output by each loop through (i.e. for each province)
+            previous_state = tf.concat(province, valid_orders)
+            h_dec_ = self.lstm(h_dec, previous_state) 
+            orders_list.append(valid_orders)
 
         return orders_list
-
-    def loss(self, probs, labels):
-        return tf.reduce_sum(tf.keras.losses.sparse_categorical_crossentropy(labels, probs))

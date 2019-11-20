@@ -74,7 +74,7 @@ class GCN(Layer):
         '''
 
         # applying adjacency matrix as floats
-        print(inputs.shape)
+        # print(inputs.shape)
         inputs = tf.tensordot(inputs, constants.A.astype(np.float32), axes=[[1], [0]]) # cant figure out shape issues using reshape to fix
         inputs = tf.reshape(inputs, (inputs.shape[0], 81, self.input_size))
         gcn_out = self.d1(inputs)

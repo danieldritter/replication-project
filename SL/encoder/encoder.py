@@ -48,4 +48,7 @@ class Encoder(Model):
         for i in range(self.num_order_blocks):
             order_out = self.order_blocks[i].call(order_out, power_season)
 
-        return (board_out, order_out)
+        print(board_out)
+        print(order_out)
+
+        return tf.concat(board_out, order_out)
