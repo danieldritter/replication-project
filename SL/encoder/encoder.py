@@ -51,4 +51,4 @@ class Encoder(Model):
         print(board_out)
         print(order_out)
 
-        return tf.concat(board_out, order_out)
+        return tf.concat((board_out, order_out), axis=2)

@@ -64,7 +64,6 @@ class SL_model(Model):
         return tf.reduce_sum(sparse_categorical_crossentropy(labels, probs))
 
 if __name__ == "__main__":
-    # TODO: rename to train_SL()
     # retrieving data
     state_inputs, prev_order_inputs, season_names = process.get_data("data/standard_no_press.jsonl")
     
@@ -82,7 +81,6 @@ if __name__ == "__main__":
         for j in range(len(season_names[i])):
             # print(season_names[i][j][0])
             powers_seasons.append(SEASON[season_names[i][j][0]] + UNIT_POWER["AUSTRIA"])
-        # print(powers_seasons)
 
         # casting to floats
         powers_seasons = tf.convert_to_tensor(powers_seasons,dtype=tf.float32)
