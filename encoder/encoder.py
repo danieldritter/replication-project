@@ -25,19 +25,19 @@ class Encoder(Model):
         self.board_blocks = [block.Block() for i in range(self.num_board_blocks)]
         self.order_blocks = [block.Block() for i in range(self.num_order_blocks)]
 
-    def call(self, state_inputs, order_inputs):
+    def call(self, state_inputs, order_inputs, power_season):
         '''
         Call method for encoder
 
         Args:
         state_inputs - the board state embeddings
         order_inputs - the previous order input embeddings
+        power_season - tuple containing current power and season of game (power,season)
 
         Returns:
         The concatenated encoded output of the board inputs and the previous order inputs
         '''
 
-        power_season = get_power_season()
 
         # applying board layers
         board_out = state_inputs
@@ -50,11 +50,3 @@ class Encoder(Model):
             order_out = self.order_blocks[i].call(order_out, power_season)
 
         return (board_out, order_out)
-
-def get_power_season():
-    pass
-
-
-
-
-

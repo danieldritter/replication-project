@@ -10,6 +10,10 @@ class FiLM(Layer):
 
     def call(self,inputs):
         # Maybe decide on specific activation functions here
-        out = self.lstm1(self.input,intial_state=self.lstm1.get_initial_state(inputs))
+        # Not sure on shape here
+        lstm_input = tf.reshape(inputs,(inputs.shape[0],inputs.shape[1],1))
+        out = self.lstm1(lstm_input,initial_state=self.lstm1.get_initial_state(inputs))
+        print(self.d2(out))
         gamma, beta = self.d2(out)
+        print(gamma, beta)
         return gamma, beta

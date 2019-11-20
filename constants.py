@@ -25,8 +25,8 @@ ALL_POWERS = ['AUSTRIA', 'ENGLAND', 'FRANCE', 'GERMANY', 'ITALY', 'RUSSIA', 'TUR
 
 # province types
 COASTS = ["BUL/EC", "BUL/SC", "SPA/NC", "SPA/SC", "STP/NC", "STP/SC"]
-WATER = ["ADR", "AEG", "BAL", "BAR", "BLA", "EAS", "ENG", "BOT", 
-         "GOL", "HEL", "ION", "IRI", "MID", "NAT", "NTH", "NRG", 
+WATER = ["ADR", "AEG", "BAL", "BAR", "BLA", "EAS", "ENG", "BOT",
+         "GOL", "HEL", "ION", "IRI", "MID", "NAT", "NTH", "NRG",
          "SKA", "TYN", "WES"]
 
 # supply centers
@@ -38,7 +38,7 @@ OG_SUPPLY_CENTERS = {
     "ITALY": ["NAP", "ROM", "VEN"],
     "RUSSIA": ["MOS", "SEV", "STP", "WAR"],
     "TURKEY": ["ANK", "CON", "SMY"],
-    "NEUTRAL": ["NWY", "SWE", "DEN", "BEL", "HOL", "SPA", "POR", 
+    "NEUTRAL": ["NWY", "SWE", "DEN", "BEL", "HOL", "SPA", "POR",
                 "TUN", "SER", "RUM", "BUL", "GRE"]
 }
 
@@ -67,7 +67,7 @@ BUILDABLE_REMOVABLE = {
 
 AREA_TYPE = {
     "land": [1, 0, 0],
-    "water": [0, 1, 0], 
+    "water": [0, 1, 0],
     "coast": [0, 0, 1]
 }
 
@@ -78,4 +78,10 @@ ORDER_TYPE = {
     "C": [0, 0, 1, 0, 0],
     "-": [0, 0, 0, 1, 0],
     None: [0, 0, 0, 0, 1]
+}
+
+SEASON = {
+    "W": [1,0,0],
+    "F": [0,1,0],
+    "S": [0,0,1]
 }
