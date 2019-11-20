@@ -326,6 +326,20 @@ def construct_prev_orders_matrix(prev_orders_game_state):
         phase_matrices.append(matrix)
     return np.array(phase_matrices)
 
+
+def get_returns():
+    """
+    TODO
+    Using the reward function, create labels for the value of each state (phase) in each game for each player.
+    a. Apply the reward function to all states in a game
+    b. Run the discount function to get the values for each state (cumulative disc reward)
+    c. Add that to the dictionary board_dict_list in process.py
+        i. key: "value"
+           value: {country: value(country) for all countries}
+
+    """
+    pass
+
 def get_data(filepath):
     states, orders, results = read_data(filepath)
     board_dict_list, season_names = parse_states(states)
