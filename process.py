@@ -1,6 +1,6 @@
 import numpy as np
 import jsonlines
-from constants import COASTS, WATER, ORDERING, OG_SUPPLY_CENTERS, UNIT_TYPE, UNIT_POWER, AREA_TYPE, ORDER_TYPE 
+from constants.constants import COASTS, WATER, ORDERING, OG_SUPPLY_CENTERS, UNIT_TYPE, UNIT_POWER, AREA_TYPE, ORDER_TYPE 
 
 def create_province_dict():
     '''
