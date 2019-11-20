@@ -13,7 +13,7 @@ class Block(Layer):
     def __init__(self, input_size):
         '''
         Initializer for a Block object
-        
+
         Keyword Args:
         input_size - size of inputs (81 * 35) for board and (81 * 40) for orders
         '''
@@ -27,7 +27,7 @@ class Block(Layer):
 
     def call(self, block_input, power_season, is_training=True):
         '''
-        Method to pass inputs through a block layer (graph convolutional layer, 
+        Method to pass inputs through a block layer (graph convolutional layer,
         batch norm, film, ReLU)
 
         Keyword Args:
@@ -68,7 +68,7 @@ class GCN(Layer):
         self.input_size = input_size
         self.d1 = Dense(input_size)
 
-    def call(self, inputs): 
+    def call(self, inputs):
         '''
         Function call for GCN, applying the adjacency matrix and a dense layer
         '''
@@ -76,6 +76,6 @@ class GCN(Layer):
         # applying adjacency matrix as floats
         # print(inputs.shape)
         inputs = tf.tensordot(inputs, constants.A.astype(np.float32), axes=[[1], [0]]) # cant figure out shape issues using reshape to fix
-        inputs = tf.reshape(inputs, (inputs.shape[0], 81, self.input_size))
+        inputs = tf.transpose(inputs, (0,2,1))
         gcn_out = self.d1(inputs)
         return gcn_out

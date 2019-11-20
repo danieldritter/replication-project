@@ -45,12 +45,12 @@ class SL_model(Model):
         # casting inputs to float32
         state_inputs = tf.cast(state_inputs, tf.float32)
         order_inputs = tf.cast(order_inputs, tf.float32)
-        
+
         enc_out = self.encoder.call(state_inputs, order_inputs, power_season)
         dec_out = self.decoder.call(enc_out, None)
         return dec_out
 
-    def loss(self, probs, labels):  
+    def loss(self, probs, labels):
         '''
         Function to compute the loss of the SL Model
 
@@ -64,9 +64,10 @@ class SL_model(Model):
         return tf.reduce_sum(sparse_categorical_crossentropy(labels, probs))
 
 if __name__ == "__main__":
+    # TODO: rename to train_SL()
     # retrieving data
-    state_inputs, prev_order_inputs, season_names = process.get_data("data/standard_no_press.jsonl")
-    
+    state_inputs, prev_order_inputs, season_names = process.get_data("/media/daniel/DATA/diplomacy_data/standard_no_press.jsonl")
+
     # initializing supervised learning model and optimizer
     model = SL_model(16, 16)
     optimizer = Adam(0.001)
@@ -77,10 +78,11 @@ if __name__ == "__main__":
         # Not sure about these conversions
         powers_seasons = []
 
-        # extracting seasons and powers for film        
+        # extracting seasons and powers for film
         for j in range(len(season_names[i])):
             # print(season_names[i][j][0])
             powers_seasons.append(SEASON[season_names[i][j][0]] + UNIT_POWER["AUSTRIA"])
+        # print(powers_seasons)
 
         # casting to floats
         powers_seasons = tf.convert_to_tensor(powers_seasons,dtype=tf.float32)
