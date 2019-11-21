@@ -52,7 +52,7 @@ class Decoder(Model):
             previous_state = tf.concat((province, valid_orders), axis=1)
             print(previous_state.shape)
             print(valid_orders.shape)
-            h_dec, out = self.lstm(h_dec, [province, valid_orders])
+            h_dec = self.lstm(h_dec, [province, valid_orders])
             print("TEST")
             orders_list.append(valid_orders)
 

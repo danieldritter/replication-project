@@ -66,7 +66,7 @@ class SL_model(Model):
 if __name__ == "__main__":
     # TODO: rename to train_SL()
     # retrieving data
-    state_inputs, prev_order_inputs, season_names = process.get_data("/media/daniel/DATA/diplomacy_data/standard_no_press.jsonl")
+    state_inputs, prev_order_inputs, season_names = process.get_data("data/standard_no_press.jsonl")
 
     # initializing supervised learning model and optimizer
     model = SL_model(16, 16)
