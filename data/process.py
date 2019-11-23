@@ -406,8 +406,7 @@ def get_data(filepath):
     # print('ORDERS LIST: ', prev_orders)
     state_inputs = np.array([construct_state_matrix(game) for game in board_dict_list])
     prev_order_inputs = np.array([construct_prev_orders_matrix(game) for game in prev_orders])
-    returns = get_returns(supply_center_owners)
-    # print(returns)
+
     return state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, supply_center_owners
 
 if __name__ == "__main__":

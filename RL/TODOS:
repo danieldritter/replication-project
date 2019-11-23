@@ -6,10 +6,11 @@
 2. Write the critic:
     a. Input: a state (e.g. one phase, 81 * 35 vector)
     b. Output: (7,) vector representing the value for each power.
-    TENTATIVELY DONE
+        * mask caveat for games without 7 powers
+    DONE
 
 3. Pretrain the critic with each game; labels are the values computed in task 1.
-    TENTATIVELY SORTA DONEISH
+    DONE
 4. Write a loss function for the actor/encoder using 15-step return.
 
 5. Write the while loop that interfaces with the engine,

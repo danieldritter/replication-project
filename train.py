@@ -12,7 +12,7 @@ def train():
     """
     # actor_sl = SL_model(num_board_blocks, num_order_blocks)
     critic_sl = Critic()
-    state_inputs, prev_order_inputs, season_names, supply_center_owners = get_data("data/standard_no_press.jsonl")
+    state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, supply_center_owners = get_data("data/standard_no_press.jsonl")
     critic_sl.train(state_inputs, supply_center_owners)
 
 if __name__ == "__main__":
