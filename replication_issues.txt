@@ -3,3 +3,8 @@ Replication Issues:
 
 1. Lack of clarity in decoder inputs; what is the initial state to the first LSTM cell of the topological ordering?
 2. What is the critic network?
+3. What is the reward function?
+    They say:
+        "As a reward function, we use the average of
+        (1) a local reward function (+1/-1 when a supply center is gained or lost (updated every phase and not just in Winter)), and
+        (2) a terminal reward function (for a solo victory, the winner gets 34 points; for a draw, the 34 points are divided"

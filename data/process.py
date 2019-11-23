@@ -1,7 +1,7 @@
 import numpy as np
 import jsonlines
-from constants.constants import COASTS, WATER, ORDERING, OG_SUPPLY_CENTERS, UNIT_TYPE, UNIT_POWER, AREA_TYPE, ORDER_TYPE 
-
+from constants.constants import COASTS, WATER, ORDERING, OG_SUPPLY_CENTERS, UNIT_TYPE, UNIT_POWER, AREA_TYPE, ORDER_TYPE, NUM_POWERS
+from RL.reward import Reward
 def create_province_dict():
     '''
     Function to construct a dictionary of province names
@@ -327,7 +327,7 @@ def construct_prev_orders_matrix(prev_orders_game_state):
     return np.array(phase_matrices)
 
 
-def get_returns():
+def get_returns(state_inputs):
     """
     TODO
     Using the reward function, create labels for the value of each state (phase) in each game for each player.
@@ -337,10 +337,28 @@ def get_returns():
         i. key: "value"
            value: {country: value(country) for all countries}
 
+    :param state_inputs: [bs, game_length, 81, 35] (list of list of 2D [81, 35] arrays)
+    :return [bs, game_length, 7] array of returns from each state (list of nparray of returns (with length game_length))
     """
-    pass
+
+    for game in state_inputs:
+        game_length = len(game)
+        returns = np.zeros((game_length, NUM_POWERS))
+        for power_ind in range(NUM_POWERS):
+            for state_ind in range(len(game)):
+                s
+
+
+
+
 
 def get_data(filepath):
+    """
+
+
+    :param filepath:
+    :return:
+    """
     states, orders, results = read_data(filepath)
     board_dict_list, season_names = parse_states(states)
     prev_orders = read_orders_data(orders, board_dict_list)
