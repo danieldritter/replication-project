@@ -1,12 +1,7 @@
 import numpy as np
 import jsonlines
-<<<<<<< HEAD
-from constants import COASTS, WATER, ORDERING, OG_SUPPLY_CENTERS, UNIT_TYPE, UNIT_POWER, AREA_TYPE, ORDER_TYPE
-
-=======
 from constants.constants import COASTS, WATER, ORDERING, OG_SUPPLY_CENTERS, UNIT_TYPE, UNIT_POWER, AREA_TYPE, ORDER_TYPE, NUM_POWERS
 from RL.reward import Reward
->>>>>>> ae42ec219d1cddbd5fa0e02384e8fe53416a8040
 def create_province_dict():
     '''
     Function to construct a dictionary of province names
@@ -239,12 +234,16 @@ def construct_state_matrix(board_state_game):
 
 def read_orders_data(orders,board_states):
     prev_orders_game = []
+    prev_orders_game_labels = []
     for i in range(len(orders)):
         prev_orders = []
+        prev_orders_labels = []
         for j in range(len(orders[i])):
             prev_orders.append(parse_order(orders[i][j],board_states[i][j]))
+            prev_orders_labels.append(orders[i][j])
         prev_orders_game.append(prev_orders)
-    return prev_orders_game
+        prev_orders_game_labels.append(prev_orders_labels)
+    return prev_orders_game, prev_orders_game_labels
 
 def parse_order(orders,board_state):
     # How do we handle case where unit_type == None
@@ -403,13 +402,13 @@ def get_data(filepath):
     """
     states, orders, results = read_data(filepath)
     board_dict_list, season_names, supply_center_owners = parse_states(states)
-    prev_orders = read_orders_data(orders, board_dict_list)
-
+    prev_orders, prev_orders_game_labels = read_orders_data(orders, board_dict_list)
+    # print('ORDERS LIST: ', prev_orders)
     state_inputs = np.array([construct_state_matrix(game) for game in board_dict_list])
     prev_order_inputs = np.array([construct_prev_orders_matrix(game) for game in prev_orders])
     returns = get_returns(supply_center_owners)
-    print(returns)
-    return state_inputs, prev_order_inputs, season_names, supply_center_owners
+    # print(returns)
+    return state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, supply_center_owners
 
 if __name__ == "__main__":
     states, orders, results = read_data("standard_no_press.jsonl")

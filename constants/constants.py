@@ -7,6 +7,7 @@ A = state_space.get_adjacency_matrix("standard")
 # getting order vocabulary and inverse dictionary
 VALID_ORDERS = state_space.get_order_vocabulary()
 ORDER_DICT = {order: order_ix for order_ix, order in enumerate(VALID_ORDERS)}
+INVERSE_ORDER_DICT = {order_ix: order for order_ix, order in enumerate(VALID_ORDERS)}
 
 
 dLbo = 35
