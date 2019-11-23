@@ -51,10 +51,10 @@ if __name__ == "__main__":
         # Getting labels for game
         labels = []
         for phase in prev_orders_game_labels[i]:
-
-            order_indices = [ORDER_DICT[order] for order in phase["AUSTRIA"]]
-            one_hots = tf.one_hot(order_indices,depth=13042)
-            labels.append(one_hots)
+            if "AUSTRIA" in phase.keys():
+                order_indices = [ORDER_DICT[order] for order in phase["AUSTRIA"]]
+                one_hots = tf.one_hot(order_indices,depth=13042)
+                labels.append(one_hots)
         # casting to floats
         powers_seasons = tf.convert_to_tensor(powers_seasons,dtype=tf.float32)
         state_input = tf.convert_to_tensor(state_inputs[i],dtype=tf.float32)
@@ -62,9 +62,9 @@ if __name__ == "__main__":
         with tf.GradientTape() as tape:
             # applying SL model
             orders, orders_probs = model.call(state_input, order_inputs, powers_seasons)
-            print(orders_probs[2][0].shape)
-            print(len(labels[2]))
-            loss = model.loss(orders_probs, labels)
+            # print(orders_probs)
+            # print(len(labels[2]))
+            # loss = model.loss(orders_probs, labels)
         # optimizing
         # gradients = tape.gradient(loss, model.trainable_variables)
         # optimizer.apply_gradients(zip(grads, model.trainable_variables))

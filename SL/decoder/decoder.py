@@ -4,6 +4,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras import Model
 from tensorflow.keras.layers import Embedding, Dense, LSTMCell
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 from SL.decoder.mask import masked_softmax
 
 # extracting <GO> token from Valid Orders list
@@ -59,46 +60,67 @@ class Decoder(Model):
         # print(board_alignment_matrix)
 
         # creating initial input for lstm
-        go_tokens = tf.convert_to_tensor(ORDER_DICT[GO], dtype=tf.float32)
-        lstm_prev = tf.concat((self.embedding(go_tokens), tf.zeros(self.attention_size)), axis=0)
+        go_tokens = tf.convert_to_tensor([ORDER_DICT[GO] for i in range(num_phases)], dtype=tf.float32)
+        lstm_prev = tf.concat((self.embedding(go_tokens), tf.zeros((num_phases,self.attention_size))), axis=1)
         # creating inital LSTM hidden state
-        action_taken_embedding = tf.zeros(self.embedding_size, dtype=tf.float32)
-
+        action_taken_embedding = tf.zeros((num_phases,self.embedding_size), dtype=tf.float32)
+        position_set = set()
+        for phase in board_alignment_matrix:
+            for position in phase:
+                position_set.add(position)
         # looping through phases of a game
         game_orders = []
         game_orders_probs = []
-        for i,phase in enumerate(board_alignment_matrix):
-
-            phase_orders = []
-            phase_order_probs = []
-
-            # looping through locations to decode in a phase
-            for location in phase:
-                enc_out = tf.gather(h_enc, location, axis=1)
-                enc_attention = enc_out[i]
-                enc_attention = tf.squeeze(enc_attention)
-                hidden_state = tf.concat((action_taken_embedding, enc_attention), axis=0)
-
-                # calling the LSTM Cell on the inputs
-                hidden_state = tf.expand_dims(hidden_state,axis=1)
-                lstm_prev = tf.expand_dims(tf.expand_dims(lstm_prev,axis=1),axis=1)
-                print(hidden_state.shape)
-                print(lstm_prev.shape)
-                lstm_out, (_, _) = self.lstm(lstm_prev, hidden_state)
-                logits = self.dense(lstm_out)
-                # order_probabilities = masked_softmax(h_dec, mask) # TODO: implement in mask.py
-                order_probabilities = tf.nn.softmax(logits)
-
-                # TODO: get actual action taken
-                action_taken = tf.math.argmax(order_probabilities, axis=0)
-                action_taken_embedding = self.embedding(action_taken)
-
-                phase_orders.append(action_taken)
-
-                phase_order_probs.append(order_probabilities)
-                lstm_prev = lstm_out
-            game_orders_probs.append(phase_order_probs)
-            game_orders.append(phase_orders)
+        for location in position_set:
+            position_orders = []
+            position_order_probs = []
+            enc_out = tf.gather(h_enc, location, axis=1)
+            print(h_enc.shape)
+            print("ENC_OUT: ", enc_out.shape)
+            # Might need different attention thing
+            enc_attention = enc_out
+            hidden_state = tf.concat([action_taken_embedding,enc_attention], axis=1)
+            print(lstm_prev.shape)
+            hidden_state = tf.expand_dims(hidden_state, axis=1)
+            lstm_out, (_, _) = self.lstm(lstm_prev, hidden_state)
+            print(lstm_out.shape)
+            logits = self.dense(lstm_out)
+            order_probabilities = tf.nn.softmax(logits)
+            # TODO: get actual action taken
+            actions_taken = tf.math.argmax(order_probabilities, axis=1)
+            actions_taken_embedding = self.embedding(actions_taken)
+            position_orders.append(actions_taken)
+            position_order_probs.append(order_probabilities)
+            lstm_prev = lstm_out
+            game_orders_probs.append(position_order_probs)
+            game_orders.append(position_orders)
+            # # looping through locations to decode in a phase
+            # for location in phase:
+            #     enc_out = tf.gather(h_enc, location, axis=1)
+            #     print(enc_out.shape)
+            #     enc_attention = enc_out[i]
+            #     # enc_attention = tf.squeeze(enc_attention)
+            #     hidden_state = tf.concat((action_taken_embedding, enc_attention), axis=0)
+            #
+            #     # calling the LSTM Cell on the inputs
+            #     # hidden_state = tf.expand_dims(hidden_state,axis=1)
+            #     print(hidden_state.shape)
+            #     print(lstm_prev.shape)
+            #     lstm_out, (_, _) = self.lstm(lstm_prev, hidden_state)
+            #     logits = self.dense(lstm_out)
+            #     # order_probabilities = masked_softmax(h_dec, mask) # TODO: implement in mask.py
+            #     order_probabilities = tf.nn.softmax(logits)
+            #
+            #     # TODO: get actual action taken
+            #     action_taken = tf.math.argmax(order_probabilities, axis=0)
+            #     action_taken_embedding = self.embedding(action_taken)
+            #
+            #     phase_orders.append(action_taken)
+            #
+            #     phase_order_probs.append(order_probabilities)
+            #     lstm_prev = lstm_out
+            # game_orders_probs.append(phase_order_probs)
+            # game_orders.append(phase_orders)
         # return tf.convert_to_tensor(game_orders)
         return game_orders, game_orders_probs
 
