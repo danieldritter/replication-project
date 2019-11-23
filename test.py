@@ -26,20 +26,20 @@ water = ["ADR", "AEG", "BAL", "BAR", "BLA", "EAS", "ENG", "BOT",
 # creating multiple agents
 
 # Basic test of 7 random action agents
-game = Game()
-reward_class = Reward(game)
-supply_centers_dist = game.get_centers()
-while not game.is_game_done:
+test_game = Game()
+reward_class = Reward(test_game)
+supply_centers_dist = test_game.get_centers()
+while not test_game.is_game_done:
     # Getting the list of possible orders for all locations
-    possible_orders = game.get_all_possible_orders()
+    possible_orders = test_game.get_all_possible_orders()
     # print(possible_orders)
 
     # For each power, randomly sampling a valid order
-    for power_name, power in game.powers.items():
+    for power_name, power in test_game.powers.items():
         # print(power_name, power)
-        power_orders = [random.choice(possible_orders[loc]) for loc in game.get_orderable_locations(power_name)
+        power_orders = [random.choice(possible_orders[loc]) for loc in test_game.get_orderable_locations(power_name)
                         if possible_orders[loc]]
-        game.set_orders(power_name, power_orders)
+        test_game.set_orders(power_name, power_orders)
 
 
     # Messages can be sent locally with game.add_message
@@ -50,14 +50,14 @@ while not game.is_game_done:
     #                               time_sent=int(time.time())))
 
     # Processing the game to move to the next phase
-    game.process()
-    print(game.phase)
+    test_game.process()
+    print(test_game.phase)
     print(reward_class.get_local_reward_all_powers())
     input()
 
 print(reward_class.get_terminal_reward_all_powers())
 
-print(game.outcome)
+print(test_game.outcome)
 
 # Testing function based on diplomacy_research repo example
 def main():
