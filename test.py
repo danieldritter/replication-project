@@ -25,6 +25,7 @@ water = ["ADR", "AEG", "BAL", "BAR", "BLA", "EAS", "ENG", "BOT",
 
 # creating multiple agents
 
+# Basic test of 7 random action agents
 game = Game()
 reward_class = Reward(game)
 supply_centers_dist = game.get_centers()
@@ -58,6 +59,7 @@ print(reward_class.get_terminal_reward_all_powers())
 
 print(game.outcome)
 
+# Testing function based on diplomacy_research repo example
 def main():
     """ Plays a local game with 7 bots """
     player1 = DipNetSLPlayer() # Use main player here x1
