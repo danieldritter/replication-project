@@ -7,6 +7,15 @@ Replication Issues:
 4. Significant training time of RL model; the original authors said it took 30 days on 4 GPUs.
 5. Beam search in decoder not mentioned in the paper; we only discovered that the original implementation used this through emailing the authors.
 6. Nothing in paper about creating an embedding of valid orders, which would then be passed into the LSTM with the attention.
-7. The explanation of attention is very incomplete; the paper does not even mention the usage of beam seach to select which previous order to choose. 
-8. No mention of "GO" tokens as initial inputs to LSTM.
+7. The explanation of attention is very incomplete; the paper does not even mention the usage of beam search to select which previous order to choose. 
+8. No mention of "GO" tokens as initial inputs to LSTM. 	
 9. What is the reward function?
+10. Not replicatable as individuals (unless major researchers and collaboration with company with large resources)
+11. No mention for training time in paper (only heard that SL took 1 day on GPU through email)
+12. Number of orderable locations changes based on the power, so the outputs of the LSTM don't have the same size! This causes errors; there is no mention of this or any sort of paddding scheme in the paper.
+
+Peeks:
+------
+
+1. Beam Search
+2. 

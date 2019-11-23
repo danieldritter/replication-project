@@ -20,10 +20,12 @@ class Encoder(Model):
         super(Model, self).__init__()
         self.num_board_blocks = num_board_blocks
         self.num_order_blocks = num_order_blocks
+        self.s_size = 60
+        self.o_size = 60
 
-        # creating blocks
-        self.board_blocks = [block.Block(35) for i in range(self.num_board_blocks)]
-        self.order_blocks = [block.Block(40) for i in range(self.num_order_blocks)]
+        # creating blocks, need first block to change size of layers for residual connection
+        self.board_blocks = [block.FirstBlock(self.s_size)] + [block.Block(self.s_size) for i in range(self.num_board_blocks - 1)]
+        self.order_blocks = [block.FirstBlock(self.o_size)] + [block.Block(self.o_size) for i in range(self.num_order_blocks - 1)]
 
     def call(self, state_inputs, order_inputs, power_season):
         '''
@@ -35,7 +37,7 @@ class Encoder(Model):
         power_season - tuple containing current power and season of game (power,season)
 
         Returns:
-        The concatenated encoded output of the board inputs and the previous order inputs
+        The concatenated encoded output of the board inputs and the previous order inputs (num_phases, 81, 120)
         '''
 
         # applying board state layers

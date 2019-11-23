@@ -4,6 +4,49 @@ from tensorflow.keras.layers import Layer, ReLU, BatchNormalization, Dense
 from SL.encoder import film
 from constants import constants
 
+class FirstBlock(Layer):
+    '''
+    A block layer consisting of the GCN, batch normalization, FiLM,
+    and ReLU
+    '''
+
+    def __init__(self, input_size):
+        '''
+        Initializer for a FirstBlock object
+
+        Keyword Args:
+        input_size - size of inputs (81 * 35) for board and (81 * 40) for orders
+        '''
+
+        super(FirstBlock,self).__init__()
+
+        self.gcn = GCN(input_size)
+        self.bn = BatchNormalization(axis=1, epsilon=0.0001)
+        self.film = film.FiLM()
+        self.relu = ReLU()
+
+    def call(self, block_input, power_season, is_training=True):
+        '''
+        Method to pass inputs through a block layer (graph convolutional layer,
+        batch norm, film, ReLU)
+
+        Keyword Args:
+        block_input - the inputs to the block (either board state or prev orders)
+        power_season - the current power and season of the game (used in FiLM)
+
+        Returns:
+        the output of the embedding
+        '''
+
+        gcn_out = self.gcn(block_input)
+        ylbo = self.bn(gcn_out, training=is_training)
+
+        # something about power and season?
+        gamma, beta = self.film(power_season)
+        zlbo = gamma[:, :, None] *  ylbo + beta[:, :, None] # increasing dimension for elemntwise mult and add
+        out = self.relu(zlbo) # no residual connection!!!
+        return out
+
 class Block(Layer):
     '''
     A block layer consisting of the GCN, batch normalization, FiLM,
@@ -43,9 +86,6 @@ class Block(Layer):
 
         # something about power and season?
         gamma, beta = self.film(power_season)
-        # print(ylbo.shape)
-        # print(gamma.shape)
-        # print(beta.shape)
         zlbo = gamma[:, :, None] *  ylbo + beta[:, :, None] # increasing dimension for elemntwise mult and add
         out = self.relu(zlbo) + block_input # adding residual connection
         return out
