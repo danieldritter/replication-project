@@ -83,16 +83,16 @@ def parse_states(states):
 
     season_names = []
     board_dict_list = []
+    supply_center_owners = []
 
     # format structure [province 1 (7 elements), province 2 (7 elems ...)]
     for i in range(len(states)):
         game_data = []
         game_seasons = []
         phases = states[i]
-
+        supply_center_owners_per_phase = []
         # looping through phases of a game
         for s in phases:
-
             # extracting seas on information for FiLM
             game_seasons.append(s["name"])
 
@@ -154,10 +154,12 @@ def parse_states(states):
                             if province_dict[prov]["unit_type"] != None:
                                 province_dict[prov]["removable"] = 1
             game_data.append(province_dict)
+            supply_center_owners_per_phase.append(centers)
         board_dict_list.append(game_data)
         season_names.append(game_seasons)
+        supply_center_owners.append(supply_center_owners_per_phase)
 
-    return board_dict_list, season_names
+    return board_dict_list, season_names, supply_center_owners
 
 def construct_state_matrix(board_state_game):
     '''
@@ -327,7 +329,7 @@ def construct_prev_orders_matrix(prev_orders_game_state):
     return np.array(phase_matrices)
 
 
-def get_returns(state_inputs):
+def get_returns(supply_center_owners, gamma=0.99):
     """
     TODO
     Using the reward function, create labels for the value of each state (phase) in each game for each player.
@@ -340,13 +342,48 @@ def get_returns(state_inputs):
     :param state_inputs: [bs, game_length, 81, 35] (list of list of 2D [81, 35] arrays)
     :return [bs, game_length, 7] array of returns from each state (list of nparray of returns (with length game_length))
     """
+    def get_average_reward(supply_center_owners_per_game):
+        """
+        Returns the average reward for each time step.
 
-    for game in state_inputs:
-        game_length = len(game)
-        returns = np.zeros((game_length, NUM_POWERS))
-        for power_ind in range(NUM_POWERS):
-            for state_ind in range(len(game)):
-                s
+        :param states: List of states in a game (game_length, 81, 35).
+        :param supply_center_owners_per_game: List of states in a game (game_length, {powers: centers}).
+        :return: (game_length, num_powers) nparray of average rewards, where game_length = len(states), num_powers =
+        received for each power in each state
+        """
+        game_length = len(supply_center_owners_per_game)
+        num_powers = len(supply_center_owners_per_game[0].values())
+        local_rewards = np.zeros((game_length, num_powers))
+        terminal_rewards = np.zeros((game_length, num_powers))
+        for phase in range(game_length):
+            supply_center_owners_per_phase = supply_center_owners_per_game[phase]
+            supply_center_values = list(supply_center_owners_per_phase.values())
+            supply_center_counts = [len(supply_center_value) for supply_center_value in supply_center_values]
+            local_rewards[phase] = np.array(supply_center_counts)
+            # if phase > 0:
+            #     local_rewards[phase] -= local_rewards[phase - 1]
+            if phase == game_length - 1:
+                terminal_rewards[phase] = np.array(supply_center_counts)
+
+        for phase in range(game_length - 1, 0, -1):
+            local_rewards[phase] -= local_rewards[phase - 1]
+
+        return (local_rewards + terminal_rewards)/2
+
+    batch_returns = []
+    for supply_center_owners_per_game in supply_center_owners:
+        game_length = len(supply_center_owners_per_game)
+        game_rewards = get_average_reward(supply_center_owners_per_game) # shape: (game_length, num_powers)
+        game_returns = np.zeros_like(game_rewards)
+        game_returns[-1] = game_rewards[-1]
+        for i in range(game_length - 2, -1, -1):
+            game_returns[i] = game_rewards[i] + gamma * game_returns[i + 1]
+
+        batch_returns.append(game_returns)
+
+    return batch_returns
+
+
 
 
 
@@ -360,13 +397,14 @@ def get_data(filepath):
     :return:
     """
     states, orders, results = read_data(filepath)
-    board_dict_list, season_names = parse_states(states)
+    board_dict_list, season_names, supply_center_owners = parse_states(states)
     prev_orders = read_orders_data(orders, board_dict_list)
 
     state_inputs = np.array([construct_state_matrix(game) for game in board_dict_list])
     prev_order_inputs = np.array([construct_prev_orders_matrix(game) for game in prev_orders])
-
-    return state_inputs, prev_order_inputs, season_names
+    returns = get_returns(supply_center_owners)
+    print(returns)
+    return state_inputs, prev_order_inputs, season_names, supply_center_owners
 
 if __name__ == "__main__":
     state_inputs, prev_order_inputs, season_names = get_data("data/standard_no_press.jsonl")

@@ -90,4 +90,4 @@ class Decoder(Model):
         Function to compute attention
         '''
 
-        return tf.zeros((encoder_output.shape[0], self.attention_size)
+        return tf.zeros((encoder_output.shape[0], self.attention_size))
