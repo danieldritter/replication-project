@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras import Model
-from constants import constants
+from constants.constants import UNIT_POWER, STATE_SIZE, NUM_POWERS
 from data.process import get_returns
 
 class Critic(Model):
@@ -18,9 +18,10 @@ class Critic(Model):
         Args:
         '''
         super(Critic, self).__init__()
-        self.crit1 = tf.keras.layers.Dense(32, input_shape=(-1, constants.STATE_SIZE), activation="relu")
-        self.crit2 = tf.keras.layers.Dense(constants.NUM_POWERS)
-        
+        self.crit1 = tf.keras.layers.Dense(32, input_shape=(-1, STATE_SIZE), activation="relu", dtype=tf.float32)
+        self.crit2 = tf.keras.layers.Dense(NUM_POWERS, dtype=tf.float32)
+
+        self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
 
     def call(self, states):
         '''
@@ -47,29 +48,62 @@ class Critic(Model):
         MSE(predicted, returns)
         """
         return tf.reduce_mean((predicted_values - returns) ** 2)
-    
-    def train(self, state_inputs, supply_center_owners, num_epochs):
+
+    def process_data(self, state_inputs, supply_center_owners):
         """
 
         :param state_inputs: [bs, game_length, 81, 35] (list of list of 2D [81, 35] arrays)
-        :param num_epochs:
+        :param supply_center_owners: List of supply center owners for each state
+        in each game in batch (bs, game_length, {powers: centers}).
+        :return: [bs, (NUM_POWERS, num_powers)]
+        """
+        power_inputs = []
+        for batch in supply_center_owners:
+            init_owners = batch[0]
+            powers = list(init_owners.keys())
+            power_mask = np.zeros(7, dtype=np.float32)
+            for power in powers:
+                power_mask[np.argmax(UNIT_POWER[power])] = 1.
+            # power_one_hot = np.argmax(np.array([UNIT_POWER[power] for power in powers], dtype=np.float32), axis=)
+            power_inputs.append(power_mask)
+
+        state_inputs_unrolled = [np.array([state.ravel() for state in game]) for game in state_inputs]
+        train_data = (state_inputs_unrolled, power_inputs)
+        train_labels = get_returns(supply_center_owners)
+        return train_data, train_labels
+
+    def train(self, state_inputs, supply_center_owners, num_epochs=1):
+        """
+
+        :param state_inputs: [bs, game_length, 81, 35] (list of list of 2D [81, 35] arrays)
+        :param supply_center_owners: [bs, game_length, {power: [centers]}] (list of list of dicts)
+        :param num_epochs: number of epoch
         :return:
         """
-        train_data = state_inputs # shape: [bs, game_length, (81, 35)]
-        train_labels = get_returns(supply_center_owners) # shape: [bs, game_length, num_powers]
-        # batch_sz = 100
-        # num_batches = len(train_data)/batch_sz
-        for batch in train_data:
-            data_batch = train_data[batch] # data_batch shape: [game_length, (81, 35)]
-            labels_batch = train_labels[batch] # labels_batch shape: [game_length, num_powers]
+        train_data, train_labels = self.process_data(state_inputs, supply_center_owners)
+        train_data_states = train_data[0] # shape: [bs, game_length, (81, 35)]
+        train_data_powers = train_data[1] # shape: [bs, game_length, num_powers]
+        num_batches = len(train_data_states)
+        for batch_num in range(num_batches):
+            states_batch = train_data_states[batch_num] # states_batch shape: [game_length, (81, 35)]
+            powers_batch = train_data_powers[batch_num] # shape: [7, num_powers]
+            labels_batch = train_labels[batch_num] # labels_batch shape: [game_length, num_powers]
+
+            # shuffle within minibatch
+            tf.random.shuffle(states_batch, seed=1)
+            tf.random.shuffle(powers_batch, seed=1)
+            tf.random.shuffle(labels_batch, seed=1)
+
             with tf.GradientTape() as tape:
-                predicted_values = self.call(data_batch)
-                loss = self.loss(predicted_values, labels_batch)
+                predicted_values = self.call(states_batch) # shape: [game_length, 7]
+
+                # mask out any powers not playing
+                predicted_values_masked = tf.boolean_mask(predicted_values, powers_batch, axis=1)
+                loss = self.loss(predicted_values_masked, labels_batch)
             gradients = tape.gradient(loss, self.trainable_variables)
             self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))
 
-            index += 1
-            if index % 100 == 0:
+            if batch_num % 1 == 0:
                 print("\tBatch number %d of %d: Loss is %.3f" % (
-                index, num_batches, loss))
+                batch_num, num_batches, loss))
 

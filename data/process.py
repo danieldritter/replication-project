@@ -343,7 +343,7 @@ def get_returns(supply_center_owners, gamma=0.99):
         i. key: "value"
            value: {country: value(country) for all countries}
 
-    :param state_inputs: [bs, game_length, 81, 35] (list of list of 2D [81, 35] arrays)
+    :param supply_center_owners: List of supply center owners for each state in each game in batch (bs, game_length, {powers: centers}).
     :return [bs, game_length, 7] array of returns from each state (list of nparray of returns (with length game_length))
     """
     def get_average_reward(supply_center_owners_per_game):
@@ -351,7 +351,7 @@ def get_returns(supply_center_owners, gamma=0.99):
         Returns the average reward for each time step.
 
         :param states: List of states in a game (game_length, 81, 35).
-        :param supply_center_owners_per_game: List of states in a game (game_length, {powers: centers}).
+        :param supply_center_owners_per_game: List of supply center owners for each state in a game (game_length, {powers: centers}).
         :return: (game_length, num_powers) nparray of average rewards, where game_length = len(states), num_powers =
         received for each power in each state
         """
