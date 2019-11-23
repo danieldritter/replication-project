@@ -1,8 +1,9 @@
-from constants.constants import ORDER_VOCABULARY_SIZE, NUM_PLACES
+from constants.constants import ORDER_VOCABULARY_SIZE, NUM_PLACES, ORDERING
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras import Model
-from SL.decoder.mask import masked_softmax
+from SL.decoder.mask import masked_softmax, create_mask
+
 
 class Decoder(Model):
     '''
@@ -42,8 +43,14 @@ class Decoder(Model):
         # initializing initial state passed to decoder, which is the size of the output of the encoder (num_phases x ORDER_VOCABULARY_SIZE)
         h_dec = tf.random.normal([int(h_enc.shape[0]), self.h_dec_size], stddev=0.1, dtype=tf.float32)
 
+        idx = 0
         for province in tf.unstack(h_enc, axis=1):
             # province is h^i^t_enc in paper,
+            '''
+            TODO: uncomment the following lines to add masked softmax.
+            create_mask requires the board state embedding and phase
+            '''
+            # mask = create_mask(board_state, phase, ORDERING[idx]) # assumes province is a location string (eg. PAR)
             # valid_orders = masked_softmax(h_dec, mask) # TODO: implement in mask.py
 
             valid_orders = h_dec
@@ -55,5 +62,5 @@ class Decoder(Model):
             h_dec = self.lstm(h_dec, [province, valid_orders])
             print("TEST")
             orders_list.append(valid_orders)
-
+            idx += 1
         return orders_list
