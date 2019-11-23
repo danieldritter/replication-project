@@ -4,10 +4,19 @@ from diplomacy_research.models import state_space
 # grabbing adjacency matrix as integers
 A = state_space.get_adjacency_matrix("standard")
 
+# getting order vocabulary and inverse dictionary
+VALID_ORDERS = state_space.get_order_vocabulary()
+ORDER_DICT = {order: order_ix for order_ix, order in enumerate(VALID_ORDERS)}
+
+
 dLbo = 35
 dLpo = 40
 H_ENC_COLS = dLbo + dLpo
 NUM_PLACES = 81 # note: 75 provinces + 6 coasts
+BOARD_FEATURES = 35
+NUM_POWERS = 7
+STATE_SIZE = NUM_PLACES * BOARD_FEATURES
+
 ORDER_VOCABULARY_SIZE = 13042
 
 # Predefined location order

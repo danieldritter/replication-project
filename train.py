@@ -1,3 +1,7 @@
+from SL_model import SL_model
+from SL.critic import Critic
+from a2c import A2C
+
 def train():
     """
     1. Process data.
@@ -5,4 +9,5 @@ def train():
     3. Train critic supervised
     4. Train RL agent as a function of actor and critic weights.
     """
-    pass
+    actor_sl = SL_model(num_board_blocks, num_order_blocks)
+    critic_sl = Critic()

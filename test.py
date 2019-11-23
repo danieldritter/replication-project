@@ -26,7 +26,6 @@ game = Game()
 reward_class = Reward(game)
 supply_centers_dist = game.get_centers()
 while not game.is_game_done:
-
     # Getting the list of possible orders for all locations
     possible_orders = game.get_all_possible_orders()
     # print(possible_orders)
@@ -48,8 +47,9 @@ while not game.is_game_done:
 
     # Processing the game to move to the next phase
     game.process()
+    print(game.phase)
     print(reward_class.get_local_reward_all_powers())
-    # input()
+    input()
 
 print(reward_class.get_terminal_reward_all_powers())
 
