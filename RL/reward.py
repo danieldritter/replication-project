@@ -2,6 +2,7 @@
 # (1) a local reward function (+1/-1 when a supply center is gained or lost (updated every phase and not just in Winter)), and
 # (2) a terminal reward function (for a solo victory, the winner gets 34 points; for a draw, the 34 points are divided
 # proportionally to the number of supply centers).
+import numpy as np
 
 class Reward():
     def __init__(self, game):
@@ -31,3 +32,15 @@ class Reward():
     def get_terminal_reward_all_powers(self):
         return {power_name: self.get_terminal_reward(power_name)
                 for power_name in self.game.get_centers()}
+
+    def get_average_reward(self, states):
+        """
+
+        :param states: List of states in a game.
+        :return: (len(states), 7) nparray of average rewards
+        received for each power in each state
+        """
+        local_rewards = np.array([self.get_local_reward_all_powers(state) for state in states])
+        terminal_rewards = np.array([self.get_terminal_reward_all_powers(state) for state in states])
+        return (local_rewards + terminal_rewards)/2
+
