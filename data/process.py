@@ -1,6 +1,6 @@
 import numpy as np
 import jsonlines
-from constants.constants import COASTS, WATER, ORDERING, OG_SUPPLY_CENTERS, UNIT_TYPE, UNIT_POWER, AREA_TYPE, ORDER_TYPE 
+from constants import COASTS, WATER, ORDERING, OG_SUPPLY_CENTERS, UNIT_TYPE, UNIT_POWER, AREA_TYPE, ORDER_TYPE
 
 def create_province_dict():
     '''
@@ -171,7 +171,7 @@ def construct_state_matrix(board_state_game):
     '''
 
     category_order = [
-        "unit_type", "unit_power", "buildable_removable", 
+        "unit_type", "unit_power", "buildable_removable",
         "d_unit_type", "d_unit_power", "area_type", "supply_center_owner"
     ]
 
@@ -202,7 +202,7 @@ def construct_state_matrix(board_state_game):
                 b = phase[province]["buildable"]
             else:
                 b = [0]
-            
+
             if "buildable" in phase[province]:
                 r = phase[province]["removable"]
             else:
@@ -327,7 +327,7 @@ def construct_prev_orders_matrix(prev_orders_game_state):
     return np.array(phase_matrices)
 
 
-def get_returns():
+def get_returns(board_dict_list):
     """
     TODO
     Using the reward function, create labels for the value of each state (phase) in each game for each player.
@@ -338,8 +338,13 @@ def get_returns():
            value: {country: value(country) for all countries}
 
     """
-    pass
-
+    for game in board_dict_list:
+        for turn, next_turn in zip(game[:-1],game[1:]):
+            for province in turn.keys():
+                if "supply_center_owner" in turn[province].keys():
+                    if "supply_center_owner" in next_turn[province].keys():
+                        if turn[province]["supply_center_owner"] != next_turn[province]["supply_center_owner"]:
+                            
 def get_data(filepath):
     states, orders, results = read_data(filepath)
     board_dict_list, season_names = parse_states(states)
@@ -351,6 +356,6 @@ def get_data(filepath):
     return state_inputs, prev_order_inputs, season_names
 
 if __name__ == "__main__":
-    state_inputs, prev_order_inputs, season_names = get_data("data/standard_no_press.jsonl")
-    print(np.shape(state_inputs))
-
+    states, orders, results = read_data("standard_no_press.jsonl")
+    board_dict_list, season_names = parse_states(states)
+    get_returns(board_dict_list)
