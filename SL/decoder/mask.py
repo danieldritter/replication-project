@@ -46,7 +46,7 @@ def masked_softmax(arr, mask):
     Returns:
     Softmax'ed result of applying given mask to h_dec
     '''
-    tf.nn.softmax(tf.math.multiply(arr, mask))
+    return tf.nn.softmax(tf.math.multiply(arr, mask))
 
 def create_mask(board_state, phase, loc):
     '''
@@ -121,7 +121,6 @@ def create_mask(board_state, phase, loc):
     mask_arr = np.zeros(ORDER_VOCABULARY_SIZE)
 
     for order in possible_orders_at_loc:
-        print(order)
         ix = state_space.order_to_ix(order)
         mask_arr[ix] = 1
     # return tf.convert_to_tensor(mask_arr, dtype=tf.float32)
@@ -136,4 +135,5 @@ def test_create_mask():
     mask = create_mask(arr, 'S1901M', 'PAR')
     print(mask)
 
-test_create_mask()
+if __name__ == "__main__":
+    test_create_mask()

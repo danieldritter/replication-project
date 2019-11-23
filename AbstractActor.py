@@ -21,10 +21,11 @@ class AbstractActor(Model):
         super(AbstractActor, self).__init__()
 
         # creating encoder and decoder networks
+        self.power = power
         self.encoder = Encoder(num_board_blocks, num_order_blocks)
         self.decoder = Decoder(power)
 
-    def call(self, state_inputs, order_inputs, power_season):
+    def call(self, state_inputs, order_inputs, power_season, season_input):
         '''
         Function to run the SL model
 
@@ -32,6 +33,7 @@ class AbstractActor(Model):
         state_inputs - the board state inputs
         order_inputs - the previous order inputs
         power_season - the power and season to be used in film
+        season_input - the names of the seasons to be used in creating the mask
 
         Returns:
         a probability distribution over valid orders
@@ -42,7 +44,7 @@ class AbstractActor(Model):
         order_inputs = tf.cast(order_inputs, tf.float32)
 
         enc_out = self.encoder.call(state_inputs, order_inputs, power_season)
-        dec_out = self.decoder.call(state_inputs,enc_out, None)
+        dec_out = self.decoder.call(state_inputs,enc_out, season_input)
         return dec_out
 
     def loss(self, probs, labels):

@@ -1,11 +1,11 @@
 
-from constants.constants import ORDER_VOCABULARY_SIZE, NUM_PLACES, VALID_ORDERS, ORDER_DICT, UNIT_POWER
+from constants.constants import ORDER_VOCABULARY_SIZE, NUM_PLACES, VALID_ORDERS, ORDER_DICT, UNIT_POWER, ORDERING
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras import Model
 from tensorflow.keras.layers import Embedding, Dense, LSTMCell
 from tensorflow.keras.preprocessing.sequence import pad_sequences
-from SL.decoder.mask import masked_softmax
+from SL.decoder.mask import masked_softmax, create_mask
 
 # extracting <GO> token from Valid Orders list
 GO = VALID_ORDERS[1]
@@ -38,7 +38,7 @@ class Decoder(Model):
         self.attention_layer = Dense(self.attention_size)
 
 
-    def call(self, board_states, h_enc, mask):
+    def call(self, board_states, h_enc, season_input):
         '''
         Call method for decoder
         Args:
@@ -46,9 +46,10 @@ class Decoder(Model):
         h_enc - the output of the encoder, an [81, H_ENC_COLS] array.
             Ordered along the 0th-dim s.t. each province is already adjacent to the next
             (so already topsorted)
-        mask - the mask computed for the orderable locations
+        season_input - the season names
         Returns:
-        The probability distributions over valid orders
+        The probability distributions over valid orders and the list for positions that 
+        have been controlled
         '''
 
         # LSTM INPUT [lstm previous (200), [previous order embedding (80) concat attention (120)]]
@@ -65,35 +66,45 @@ class Decoder(Model):
         # creating inital LSTM hidden state
         action_taken_embedding = tf.zeros((num_phases,self.embedding_size), dtype=tf.float32)
         position_set = set()
+
+        # creating set for positions owned
         for phase in board_alignment_matrix:
             for position in phase:
                 position_set.add(position)
+        
+        position_list = list(position_set)
+
         # looping through phases of a game
-        game_orders = []
         game_orders_probs = []
-        for location in position_set:
-            position_orders = []
+
+        for location in position_list:
             position_order_probs = []
             enc_out = tf.gather(h_enc, location, axis=1)
-            print(h_enc.shape)
-            print("ENC_OUT: ", enc_out.shape)
+
+            # print("ENC_OUT: ", enc_out.shape)
+
             # Might need different attention thing
             enc_attention = enc_out
             hidden_state = tf.concat([action_taken_embedding,enc_attention], axis=1)
-            print(lstm_prev.shape)
             hidden_state = tf.expand_dims(hidden_state, axis=1)
+            
+            # running lstm and computing logits
             lstm_out, (_, _) = self.lstm(lstm_prev, hidden_state)
-            print(lstm_out.shape)
             logits = self.dense(lstm_out)
-            order_probabilities = tf.nn.softmax(logits)
+
+            # computing mask for masked softmax
+            mask = np.array([create_mask(board_states[i], season_input[i], ORDERING[location]) for i in range(num_phases)])
+            order_probabilities = masked_softmax(logits, mask)
+            
             # TODO: get actual action taken
+            # setting outputs for next iteration
             actions_taken = tf.math.argmax(order_probabilities, axis=1)
             actions_taken_embedding = self.embedding(actions_taken)
-            position_orders.append(actions_taken)
-            position_order_probs.append(order_probabilities)
             lstm_prev = lstm_out
+
+            position_order_probs.append(order_probabilities)            
             game_orders_probs.append(position_order_probs)
-            game_orders.append(position_orders)
+
             # # looping through locations to decode in a phase
             # for location in phase:
             #     enc_out = tf.gather(h_enc, location, axis=1)
@@ -122,7 +133,11 @@ class Decoder(Model):
             # game_orders_probs.append(phase_order_probs)
             # game_orders.append(phase_orders)
         # return tf.convert_to_tensor(game_orders)
-        return game_orders, game_orders_probs
+
+        # converting position list back to strings
+        position_list = [ORDERING[position] for position in position_list]
+
+        return tf.convert_to_tensor(game_orders_probs, dtype=tf.float32), position_list
 
     def compute_attention(self, encoder_output):
         '''
