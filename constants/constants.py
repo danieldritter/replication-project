@@ -13,6 +13,10 @@ dLbo = 35
 dLpo = 40
 H_ENC_COLS = dLbo + dLpo
 NUM_PLACES = 81 # note: 75 provinces + 6 coasts
+BOARD_FEATURES = 35
+NUM_POWERS = 7
+STATE_SIZE = NUM_PLACES * BOARD_FEATURES
+
 ORDER_VOCABULARY_SIZE = 13042
 
 # Predefined location order
