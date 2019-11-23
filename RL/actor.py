@@ -10,20 +10,21 @@ from SL.decoder.decoder import Decoder
 from constants.constants import SEASON, UNIT_POWER, ORDER_DICT
 from AbstractActor import AbstractActor
 
+
 class ActorRL(AbstractActor):
     '''
     The RL Actor for the Diplomacy game
     '''
     def loss(self, probs, labels):
         '''
-        Function to compute the loss of the SL Model
+        Function to compute the loss of the RL Model
 
         Keyword Args:
         probs - the probability distribution output over the orders
         labels - the labels representing the actions taken
 
         Return:
-        the crossentropy loss for the actions taken
+        the policy gradient loss thing (no batching)
         '''
         raise NotImplementedError("TODO!")
 

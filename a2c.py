@@ -1,8 +1,10 @@
 import os
-
-import gym
 import numpy as np
 import tensorflow as tf
+
+from RL.actor import ActorRL
+from RL.critic import CriticRL
+
 
 # Killing optional CPU driver warnings
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
@@ -11,18 +13,19 @@ class A2C:
         """
         Initialize Actor, Critic model.
         """
-        pass
+        self.actor = ActorRL()
+        self.critic = CriticRL()
 
     def train(self, num_episodes):
         """
-        Training loop for A2C. Generates a complete trajectory for one episode, and then updates both the
-        actor and critic networks using that trajectory
+        Training loop for A2C. Generates a complete trajectory for one episode,
+        and then updates both the actor and critic networks using that trajectory
 
         while loop that interfaces with the engine, combines actor/critic loss, optimizes gradients etc.
 
         :param num_episodes: number of episodes to train the networks for
-
         :returns: None
+        TODO(Shamay): how do you play a game?
         """
         total_rewards = []
         final_average = []
