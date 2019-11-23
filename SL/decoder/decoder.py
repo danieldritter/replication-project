@@ -1,5 +1,5 @@
 
-m constants.constants import ORDER_VOCABULARY_SIZE, NUM_PLACES, VALID_ORDERS, ORDER_DICT, UNIT_POWER
+from constants.constants import ORDER_VOCABULARY_SIZE, NUM_PLACES, VALID_ORDERS, ORDER_DICT, UNIT_POWER
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras import Model
