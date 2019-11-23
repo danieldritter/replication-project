@@ -3,8 +3,10 @@ Replication Issues:
 
 1. Lack of clarity in decoder inputs; what is the initial state to the first LSTM cell of the topological ordering?
 2. What is the critic network?
-3. What is the reward function?
-    They say:
-        "As a reward function, we use the average of
-        (1) a local reward function (+1/-1 when a supply center is gained or lost (updated every phase and not just in Winter)), and
-        (2) a terminal reward function (for a solo victory, the winner gets 34 points; for a draw, the 34 points are divided"
+3. Big Issue: Between each LSTMCell state, they concatenate the previous output of the LSTMCell and the output of the encoder. However, these are not the same size, so it does not work as inputs to a standard LSTM.
+4. Significant training time of RL model; the original authors said it took 30 days on 4 GPUs.
+5. Beam search in decoder not mentioned in the paper; we only discovered that the original implementation used this through emailing the authors.
+6. Nothing in paper about creating an embedding of valid orders, which would then be passed into the LSTM with the attention.
+7. The explanation of attention is very incomplete; the paper does not even mention the usage of beam seach to select which previous order to choose. 
+8. No mention of "GO" tokens as initial inputs to LSTM.
+9. What is the reward function?
