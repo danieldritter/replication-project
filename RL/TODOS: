@@ -1,9 +1,7 @@
 1. Using the reward function, create labels for the value of each state (phase) in each game.
-    a. Apply the reward function to all states in a game
-    b. Run the discount function to get the values for each state (cumulative disc reward)
-    c. Add that to the dictionary board_dict_list in process.py
-        i. key: "value"
-           value: {country: value(country) for all countries}
+    a. Apply the reward function to all states in a game - DONE
+    b. Run the discount function to get the values for each state (cumulative disc reward) - DONE
+    c. Create new variable supply_centers_owners to hold the value at each state for each power. - DONE
 
 2. Write the critic:
     a. Input: a state (e.g. one phase, 81 * 35 vector)

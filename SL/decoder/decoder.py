@@ -103,7 +103,7 @@ class Decoder(Model):
         '''
 
         return tf.zeros((encoder_output.shape[0], self.attention_size))
-    
+
 def get_orderable_locs(board_state_embedding, power):
     '''
     Function to compute the orderable locations based off of a board state embedding
