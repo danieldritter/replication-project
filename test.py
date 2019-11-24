@@ -1,8 +1,9 @@
 import random
 from diplomacy import Game
+from tornado import gen
 from RL.reward import Reward
 from diplomacy.utils.export import to_saved_game_format
-
+import json
 # importing from research
 from diplomacy_research.models import state_space
 from diplomacy_research.players.random_player import RandomPlayer
@@ -23,46 +24,47 @@ water = ["ADR", "AEG", "BAL", "BAR", "BLA", "EAS", "ENG", "BOT",
          "GOL", "HEL", "ION", "IRI", "MID", "NAT", "NTH", "NRG", 
          "SKA", "TYN", "WES"]
 
-# creating multiple agents
+def test_game():
+    # creating multiple agents
+    # Basic test of 7 random action agents
+    test_game = Game()
+    reward_class = Reward(test_game)
+    supply_centers_dist = test_game.get_centers()
+    while not test_game.is_game_done:
+        # Getting the list of possible orders for all locations
+        possible_orders = test_game.get_all_possible_orders()
+        # print(possible_orders)
 
-# Basic test of 7 random action agents
-test_game = Game()
-reward_class = Reward(test_game)
-supply_centers_dist = test_game.get_centers()
-while not test_game.is_game_done:
-    # Getting the list of possible orders for all locations
-    possible_orders = test_game.get_all_possible_orders()
-    # print(possible_orders)
-
-    # For each power, randomly sampling a valid order
-    for power_name, power in test_game.powers.items():
-        # print(power_name, power)
-        power_orders = [random.choice(possible_orders[loc]) for loc in test_game.get_orderable_locations(power_name)
-                        if possible_orders[loc]]
-        test_game.set_orders(power_name, power_orders)
+        # For each power, randomly sampling a valid order
+        for power_name, power in test_game.powers.items():
+            # print(power_name, power)
+            power_orders = [random.choice(possible_orders[loc]) for loc in test_game.get_orderable_locations(power_name)
+                            if possible_orders[loc]]
+            test_game.set_orders(power_name, power_orders)
 
 
-    # Messages can be sent locally with game.add_message
-    # e.g. game.add_message(Message(sender='FRANCE',
-    #                               recipient='ENGLAND',
-    #                               message='This is a message',
-    #                               phase=self.get_current_phase(),
-    #                               time_sent=int(time.time())))
+        # Messages can be sent locally with game.add_message
+        # e.g. game.add_message(Message(sender='FRANCE',
+        #                               recipient='ENGLAND',
+        #                               message='This is a message',
+        #                               phase=self.get_current_phase(),
+        #                               time_sent=int(time.time())))
 
-    # Processing the game to move to the next phase
-    test_game.process()
-    print(test_game.phase)
-    print(reward_class.get_local_reward_all_powers())
-    input()
+        # Processing the game to move to the next phase
+        test_game.process()
+        print(test_game.phase)
+        print(reward_class.get_local_reward_all_powers())
+        input()
 
-print(reward_class.get_terminal_reward_all_powers())
+    print(reward_class.get_terminal_reward_all_powers())
 
-print(test_game.outcome)
+    print(test_game.outcome)
 
 # Testing function based on diplomacy_research repo example
+@gen.coroutine
 def main():
     """ Plays a local game with 7 bots """
-    player1 = DipNetSLPlayer() # Use main player here x1
+    player1 = RandomPlayer() # Use main player here x1
     player2 = RandomPlayer() # Use other player here x6
 
     game = Game()
