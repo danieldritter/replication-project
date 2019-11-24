@@ -47,6 +47,8 @@ def read_data(filepath):
                 phase_states.append(phase["state"])
                 phase_orders.append(phase["orders"])
                 phase_results.append(phase["results"])
+            if count == 10:
+                break
             count += 1
             states.append(phase_states)
             orders.append(phase_orders)
