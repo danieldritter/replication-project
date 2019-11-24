@@ -15,8 +15,8 @@ class Reward():
         old_owned_centers = self.prev_supply_centers_dist[power_name]
         new_owned_centers = self.game.get_centers(power_name)
         reward = len(new_owned_centers) - len(old_owned_centers)
-        print(
-            f"Old {power_name}: {old_owned_centers}, New {power_name}: {new_owned_centers}")
+        #print(
+        #    f"Old {power_name}: {old_owned_centers}, New {power_name}: {new_owned_centers}")
         self.prev_supply_centers_dist[power_name] = self.game.get_centers(power_name)
         return reward
 
