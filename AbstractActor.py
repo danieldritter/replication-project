@@ -59,3 +59,20 @@ class AbstractActor(Model):
         loss for the actions taken
         '''
         raise NotImplementedError("Not implemented in abstract class.")
+
+    def get_orders(self, game, power_names):
+        """
+        See diplomacy_research.players.player.Player.get_orders
+        :param game: Game object
+        :param power_names: A list of power names we are playing, or alternatively a single power name.
+        :return: One of the following:
+                1) If power_name is a string and with_draw == False (or is not set):
+                    - A list of orders the power should play
+                2) If power_name is a list and with_draw == False (or is not set):
+                    - A list of list, which contains orders for each power
+                3) If power_name is a string and with_draw == True:
+                    - A tuple of 1) the list of orders for the power, 2) a boolean to accept a draw or not
+                4) If power_name is a list and with_draw == True:
+                    - A list of tuples, each tuple having the list of orders and the draw boolean
+        """
+        raise NotImplementedError("TODO!")

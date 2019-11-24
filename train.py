@@ -14,7 +14,6 @@ def train():
     critic_sl = Critic()
     state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, supply_center_owners = get_data("data/standard_no_press.jsonl")
     critic_sl.train(state_inputs, supply_center_owners)
-    a2c =
 
 if __name__ == "__main__":
     train()

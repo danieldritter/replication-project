@@ -17,12 +17,14 @@
     combines actor/critic loss, optimizes gradients etc. in 
     train a2c.py
 
-6. Create mask
+6. Create mask DONE
 
 7. compute #support, #X-support, #Eff-X-support
 #support = # of support orders given by a power in a game.
 #X-support = # of support orders given by a power in a game that helps FOREIGN powers
 #Eff-X-support = # of support orders given by a power in a game that helps FOREIGN powers CRITICALLY
+
+8. Implement get_orders in AbstractActor
 
 Calculating support:
 1. Look at orders
