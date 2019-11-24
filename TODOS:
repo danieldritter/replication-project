@@ -1,6 +1,8 @@
 10. Possibly rewrite reward function according to the code snippet linked in Philip's
 email.
 
+11. Add tensorboard and stuff to CriticSL and train.
+
 5. Write the while loop that interfaces with the engine,
     combines actor/critic loss, optimizes gradients etc. in 
     train a2c.py
@@ -20,7 +22,10 @@ email.
 9. Put everything together in train.py
 
 ***************BLOCKED*****************
-4. Write a loss function for the actor/encoder using 15-step return.
+4. Write a loss function for the actor using 15-step return.
+(blocked by Philip's response)
+
+12. Write a loss function for the critic.
 (blocked by Philip's response)
 ***************************************
 
