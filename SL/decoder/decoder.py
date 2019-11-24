@@ -48,7 +48,7 @@ class Decoder(Model):
             (so already topsorted)
         season_input - the season names
         Returns:
-        The probability distributions over valid orders and the list for positions that 
+        The probability distributions over valid orders and the list for positions that
         have been controlled
         '''
 
@@ -71,12 +71,11 @@ class Decoder(Model):
         for phase in board_alignment_matrix:
             for position in phase:
                 position_set.add(position)
-        
+
         position_list = list(position_set)
 
         # looping through phases of a game
         game_orders_probs = []
-
         for location in position_list:
             position_order_probs = []
             enc_out = tf.gather(h_enc, location, axis=1)
@@ -87,7 +86,7 @@ class Decoder(Model):
             enc_attention = enc_out
             hidden_state = tf.concat([action_taken_embedding,enc_attention], axis=1)
             hidden_state = tf.expand_dims(hidden_state, axis=1)
-            
+
             # running lstm and computing logits
             lstm_out, (_, _) = self.lstm(lstm_prev, hidden_state)
             logits = self.dense(lstm_out)
@@ -95,14 +94,14 @@ class Decoder(Model):
             # computing mask for masked softmax
             mask = np.array([create_mask(board_states[i], season_input[i], ORDERING[location]) for i in range(num_phases)])
             order_probabilities = masked_softmax(logits, mask)
-            
+
             # TODO: get actual action taken
             # setting outputs for next iteration
             actions_taken = tf.math.argmax(order_probabilities, axis=1)
             actions_taken_embedding = self.embedding(actions_taken)
             lstm_prev = lstm_out
 
-            position_order_probs.append(order_probabilities)            
+            position_order_probs.append(order_probabilities)
             game_orders_probs.append(position_order_probs)
 
             # # looping through locations to decode in a phase
@@ -136,7 +135,6 @@ class Decoder(Model):
 
         # converting position list back to strings
         position_list = [ORDERING[position] for position in position_list]
-
         return tf.convert_to_tensor(game_orders_probs, dtype=tf.float32), position_list
 
     def compute_attention(self, encoder_output):

@@ -1,4 +1,5 @@
 import numpy as np
+import datetime
 import tensorflow as tf
 from tensorflow.keras import Model
 from tensorflow.keras.losses import categorical_crossentropy
@@ -31,9 +32,9 @@ class SL_model(AbstractActor):
         loss = 0
         for i in range(len(prev_order_phase_labels)):
             phase = prev_order_phase_labels[i]
-            if self.power in phase.keys() and phase[self.power] != []:
+            if self.power in phase.keys() and phase[self.power] != [] and phase[self.power] != None:
                 provinces = [order.split()[1] for order in phase[self.power]]
-                
+
                 # labels for province at specific phase
                 order_indices = [ORDER_DICT[order] for order in phase[self.power]]
                 one_hots = tf.one_hot(order_indices,depth=13042)
@@ -41,19 +42,24 @@ class SL_model(AbstractActor):
                 # predictions for province at specific phase
                 predictions = tf.convert_to_tensor([probs[i][position_lists.index(province)] for province in provinces], dtype=tf.float32)
                 loss += tf.reduce_mean(categorical_crossentropy(one_hots, predictions))
-        
+
         loss /= len(prev_orders_game_labels)
         return loss
 
 if __name__ == "__main__":
+
+    # Set up tracking metrics and logging directory
+    train_loss = tf.keras.metrics.Mean('train_loss', dtype=tf.float32)
+    current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    train_log_dir = 'data/logs/' + current_time + '/train'
+    train_summary_writer = tf.summary.create_file_writer(train_log_dir)
     # TODO: rename to train_SL()
     # retrieving data
     state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, supply_center_owners = process.get_data("data/standard_no_press.jsonl")
-
+    power = "AUSTRIA"
     # initializing supervised learning model and optimizer
-    model = SL_model(16, 16, "AUSTRIA")
+    model = SL_model(16, 16, power)
     optimizer = Adam(0.001)
-
     # Looping through each game
     for i in range(len(state_inputs)):
         # Parsing just the season(not year)
@@ -63,7 +69,7 @@ if __name__ == "__main__":
         # extracting seasons and powers for film
         for j in range(len(season_names[i])):
             # print(season_names[i][j][0])
-            powers_seasons.append(SEASON[season_names[i][j][0]] + UNIT_POWER["AUSTRIA"])
+            powers_seasons.append(SEASON[season_names[i][j][0]] + UNIT_POWER[power])
         # print(powers_seasons)
 
         # casting encoder and decoder inputs to floats
@@ -76,13 +82,17 @@ if __name__ == "__main__":
             # applying SL model
             orders_probs, position_lists = model.call(state_input, order_inputs, powers_seasons, season_input)
             print(orders_probs.shape)
-            orders_probs = tf.transpose(orders_probs, perm=[2, 0, 3, 1])
-            orders_probs = tf.squeeze(orders_probs)
+            if orders_probs.shape[0] != 0:
+                orders_probs = tf.transpose(orders_probs, perm=[2, 0, 3, 1])
+                orders_probs = tf.squeeze(orders_probs)
 
-            # computing loss for probabilities
-            game_loss = model.loss(prev_orders_game_labels[i], orders_probs, position_lists)
-            print(game_loss)
-            
-        # optimizing
-        gradients = tape.gradient(game_loss, model.trainable_variables)
-        optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+                # computing loss for probabilities
+                game_loss = model.loss(prev_orders_game_labels[i], orders_probs, position_lists)
+                print(game_loss)
+                # Add to loss tracking and record loss
+                train_loss(game_loss)
+                with train_summary_writer.as_default():
+                    tf.summary.scalar('loss', train_loss.result(), step=i)
+                # optimizing
+                gradients = tape.gradient(game_loss, model.trainable_variables)
+                optimizer.apply_gradients(zip(gradients, model.trainable_variables))
