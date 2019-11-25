@@ -43,7 +43,7 @@ class FirstBlock(Layer):
 
         # something about power and season?
         gamma, beta = self.film(power_season)
-        zlbo = gamma[:, :, None] *  ylbo + beta[:, :, None] # increasing dimension for elemntwise mult and add
+        zlbo = tf.expand_dims(gamma,axis=2)*ylbo + tf.expand_dims(beta,axis=2) # increasing dimension for elemntwise mult and add
         out = self.relu(zlbo) # no residual connection!!!
         return out
 
@@ -86,7 +86,7 @@ class Block(Layer):
 
         # something about power and season?
         gamma, beta = self.film(power_season)
-        zlbo = gamma[:, :, None] *  ylbo + beta[:, :, None] # increasing dimension for elemntwise mult and add
+        zlbo = tf.expand_dims(gamma,axis=2)*ylbo + tf.expand_dims(beta,axis=2) # increasing dimension for elemntwise mult and add
         out = self.relu(zlbo) + block_input # adding residual connection
         return out
 
