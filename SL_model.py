@@ -17,7 +17,6 @@ class SL_model(AbstractActor):
     The supervised learning Actor for the Diplomacy game
     '''
 
-    # @tf.function
     def loss(self, prev_order_phase_labels, probs, position_lists, power):
         '''
         Function to compute the loss of the SL Model
@@ -66,6 +65,7 @@ if __name__ == "__main__":
     optimizer = Adam(0.001)
     # Looping through each game
     for i in range(len(state_inputs)):
+        # Finds winning power to use in network
         last_turn = board_dict_list[i][-1]
         prov_num_dict = defaultdict(int)
         for province in last_turn:

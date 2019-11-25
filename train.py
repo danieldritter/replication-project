@@ -4,6 +4,7 @@ from RL.critic import CriticRL
 from data.process import get_data
 import tensorflow as tf
 import numpy as np
+import pickle
 from a2c import A2C
 
 
@@ -27,7 +28,10 @@ def train():
     state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, supply_center_owners, board_dict_list = get_data("data/standard_no_press.jsonl")
     train_data, train_labels = critic_sl.process_data(state_inputs, supply_center_owners)
     critic_sl.train(state_inputs, supply_center_owners)
-    copy_sl_to_rl(critic_sl, critic_rl, train_data)
+    weights_file = open("critic_weights.pickle","wb+")
+    pickle.dump(critic_sl.get_weights(),weights_file)
+    weights_file.close()
+    # copy_sl_to_rl(critic_sl, critic_rl, train_data)
 
     # DOESN'T WORK FOR SOME REASON https://stackoverflow.com/questions/55719047/is-loading-in-eager-tensorflow-broken-right-now
     # checkpoint = tf.train.Checkpoint(model=critic_sl2)
@@ -35,6 +39,9 @@ def train():
     # sl_weights = critic_sl.get_weights()
     # new_weights = critic_sl2.get_weights()
     # print(critic_sl2.get_weights())
+    new_weights_file = open("critic_weights.pickle","rb")
+    new_weights = pickle.load(new_weights_file)
+    critic_sl.set_weights(new_weights)
 
 if __name__ == "__main__":
     train()

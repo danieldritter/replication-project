@@ -109,6 +109,7 @@ class GCN(Layer):
 
         self.input_size = input_size
         self.d1 = Dense(input_size)
+        self.A_matrix = tf.convert_to_tensor(constants.A.astype(np.float32))
 
     def call(self, inputs):
         '''
@@ -116,7 +117,8 @@ class GCN(Layer):
         '''
 
         # applying adjacency matrix as floats
-        inputs = tf.tensordot(inputs, constants.A.astype(np.float32), axes=[[1], [0]]) # cant figure out shape issues using reshape to fix
+        inputs = tf.tensordot(inputs, self.A_matrix, axes=[[1], [0]])
+        # inputs = tf.einsum('...j,i...->...',inputs,self.A_matrix)
         inputs = tf.transpose(inputs, (0,2,1))
         gcn_out = self.d1(inputs)
         return gcn_out
