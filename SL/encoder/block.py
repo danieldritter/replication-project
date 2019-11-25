@@ -41,8 +41,9 @@ class FirstBlock(Layer):
         gcn_out = self.gcn(block_input)
         ylbo = self.bn(gcn_out, training=is_training)
 
-        # something about power and season?
-        gamma, beta = self.film(power_season)
+        # reshaping power and season then inputting
+        power_season_input = tf.reshape(power_season,(power_season.shape[0],power_season.shape[1],1))
+        gamma, beta = self.film(power_season_input, power_season)
         zlbo = tf.expand_dims(gamma,axis=2)*ylbo + tf.expand_dims(beta,axis=2) # increasing dimension for elemntwise mult and add
         out = self.relu(zlbo) # no residual connection!!!
         return out
@@ -84,8 +85,9 @@ class Block(Layer):
         gcn_out = self.gcn(block_input)
         ylbo = self.bn(gcn_out, training=is_training)
 
-        # something about power and season?
-        gamma, beta = self.film(power_season)
+        # reshaping power and season then inputting
+        power_season_input = tf.reshape(power_season,(power_season.shape[0],power_season.shape[1],1))
+        gamma, beta = self.film(power_season_input, power_season)
         zlbo = tf.expand_dims(gamma,axis=2)*ylbo + tf.expand_dims(beta,axis=2) # increasing dimension for elemntwise mult and add
         out = self.relu(zlbo) + block_input # adding residual connection
         return out

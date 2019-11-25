@@ -1,5 +1,6 @@
 import numpy as np
 import datetime
+from collections import defaultdict
 import tensorflow as tf
 from tensorflow.keras import Model
 from tensorflow.keras.losses import categorical_crossentropy
@@ -16,7 +17,8 @@ class SL_model(AbstractActor):
     The supervised learning Actor for the Diplomacy game
     '''
 
-    def loss(self, prev_order_phase_labels, probs, position_lists):
+    # @tf.function
+    def loss(self, prev_order_phase_labels, probs, position_lists, power):
         '''
         Function to compute the loss of the SL Model
 
@@ -33,11 +35,11 @@ class SL_model(AbstractActor):
         loss = 0
         for i in range(len(prev_order_phase_labels)):
             phase = prev_order_phase_labels[i]
-            if self.power in phase.keys() and phase[self.power] != [] and phase[self.power] != None:
-                provinces = [order.split()[1] for order in phase[self.power]]
+            if power in phase.keys() and phase[power] != [] and phase[power] != None:
+                provinces = [order.split()[1] for order in phase[power]]
 
                 # labels for province at specific phase
-                order_indices = [ORDER_DICT[order] for order in phase[self.power]]
+                order_indices = [ORDER_DICT[order] for order in phase[power]]
                 one_hots = tf.one_hot(order_indices,depth=13042)
 
                 # predictions for province at specific phase
@@ -46,7 +48,7 @@ class SL_model(AbstractActor):
                 predictions = tf.convert_to_tensor([probs[i][position_lists.index(province)] for province in provinces], dtype=tf.float32)
                 loss += tf.reduce_mean(categorical_crossentropy(one_hots, predictions))
 
-        loss /= len(prev_orders_game_labels)
+        loss /= len(prev_order_phase_labels)
         return loss
 
 if __name__ == "__main__":
@@ -59,12 +61,18 @@ if __name__ == "__main__":
     # TODO: rename to train_SL()
     # retrieving data
     state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, supply_center_owners, board_dict_list = process.get_data("data/standard_no_press.jsonl")
-    power = "AUSTRIA"
     # initializing supervised learning model and optimizer
-    model = SL_model(16, 16, power)
+    model = SL_model(16, 16)
     optimizer = Adam(0.001)
     # Looping through each game
     for i in range(len(state_inputs)):
+        last_turn = board_dict_list[i][-1]
+        prov_num_dict = defaultdict(int)
+        for province in last_turn:
+            if "unit_power" in last_turn[province].keys():
+                prov_num_dict[last_turn[province]["unit_power"]] += 1
+        power = max(prov_num_dict, key=prov_num_dict.get)
+
         # Parsing just the season(not year)
         # Not sure about these conversions
         powers_seasons = []
@@ -83,14 +91,14 @@ if __name__ == "__main__":
 
         with tf.GradientTape() as tape:
             # applying SL model
-            orders_probs, position_lists = model.call(state_input, order_inputs, powers_seasons, season_input, curr_board_dict)
+            orders_probs, position_lists = model.call(state_input, order_inputs, powers_seasons, season_input, curr_board_dict, power)
             print(orders_probs.shape)
             if orders_probs.shape[0] != 0:
                 orders_probs = tf.transpose(orders_probs, perm=[2, 0, 3, 1])
                 orders_probs = tf.squeeze(orders_probs)
 
                 # computing loss for probabilities
-                game_loss = model.loss(prev_orders_game_labels[i], orders_probs, position_lists)
+                game_loss = model.loss(prev_orders_game_labels[i], orders_probs, position_lists, power)
                 print(game_loss)
                 # Add to loss tracking and record loss
                 train_loss(game_loss)
