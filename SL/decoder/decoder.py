@@ -46,6 +46,7 @@ class Decoder(Model):
             Ordered along the 0th-dim s.t. each province is already adjacent to the next
             (so already topsorted)
         season_input - the season names
+        board_dict - a list of dictionaries representing board states
         Returns:
         The probability distributions over valid orders and the list for positions that
         have been controlled
@@ -56,7 +57,7 @@ class Decoder(Model):
         # getting number of phases in game
         num_phases = h_enc.shape[0]
 
-        board_alignment_matrix = get_orderable_locs(board_states, self.power)
+        board_alignment_matrix = get_orderable_locs(board_dict, self.power)
         # print(board_alignment_matrix)
 
         # creating initial input for lstm
@@ -153,29 +154,26 @@ class Decoder(Model):
 
         return tf.zeros((encoder_output.shape[0], self.attention_size))
 
-def get_orderable_locs(board_state_embedding, power):
+def get_orderable_locs(board_dict_list, power):
     '''
     Function to compute the orderable locations based off of a board state embedding
     Keyword Args:
-    board_state_embedding - the board state of the game
+    board_dict_list - a list of board state dictionaries of phases
     power - the power to extract orderable locations from
     Returns
     the board alignment matrix of shape (num_phases, num_locs) which are indices of provinces
     '''
 
     board_alignment_matrix = []
-    for phase in board_state_embedding:
+    for phase in board_dict_list:
         phase_matrix = []
-        for i in range(len(phase)):
+        for i in range(len(ORDERING)):
 
-            province = phase[i]
+            province = ORDERING[i]
             # checking if unit type is not none
-            if province[2] == 0:
-                powers = province[3:11]
-                # print(powers)
-
+            if "unit_type" in phase[province]:
                 # if it is the same power as our model
-                if np.array_equal(UNIT_POWER[power], powers):
+                if "unit_power" in phase[province] and phase[province]["unit_power"] == power:
                     phase_matrix.append(i)
         board_alignment_matrix.append(phase_matrix)
     return board_alignment_matrix

@@ -34,6 +34,7 @@ class AbstractActor(Model):
         order_inputs - the previous order inputs
         power_season - the power and season to be used in film
         season_input - the names of the seasons to be used in creating the mask
+        board_dict - the board state dictionary representation
 
         Returns:
         a probability distribution over valid orders
