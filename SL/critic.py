@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras import Model
 from constants.constants import UNIT_POWER, STATE_SIZE, NUM_POWERS
-from data.process import get_returns
+from RL.reward import get_returns
 from AbstractCritic import AbstractCritic
 import datetime
 
