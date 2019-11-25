@@ -9,7 +9,7 @@ class AbstractActor(Model):
     The supervised learning model for the Diplomacy game
     '''
 
-    def __init__(self, num_board_blocks, num_order_blocks, power):
+    def __init__(self, num_board_blocks, num_order_blocks):
         '''
         Initialization for Encoder Model
 
@@ -21,11 +21,10 @@ class AbstractActor(Model):
         super(AbstractActor, self).__init__()
 
         # creating encoder and decoder networks
-        self.power = power
         self.encoder = Encoder(num_board_blocks, num_order_blocks)
-        self.decoder = Decoder(power)
+        self.decoder = Decoder()
 
-    def call(self, state_inputs, order_inputs, power_season, season_input, board_dict):
+    def call(self, state_inputs, order_inputs, power_season, season_input, board_dict, power):
         '''
         Function to run the SL model
 
@@ -46,7 +45,7 @@ class AbstractActor(Model):
         enc_out = self.encoder.call(state_inputs, order_inputs, power_season)
 
         # extracting positions and masks to use in decoder
-        pos_list, masks = self.decoder.create_pos_masks(state_inputs, season_input, board_dict) 
+        pos_list, masks = self.decoder.create_pos_masks(state_inputs, season_input, board_dict, power)
         dec_out = self.decoder.call(state_inputs,enc_out, pos_list, masks)
         return dec_out
 
