@@ -27,7 +27,6 @@ class Encoder(Model):
         self.board_blocks = [block.FirstBlock(self.s_size)] + [block.Block(self.s_size) for i in range(self.num_board_blocks - 1)]
         self.order_blocks = [block.FirstBlock(self.o_size)] + [block.Block(self.o_size) for i in range(self.num_order_blocks - 1)]
 
-    # @tf.function
     def call(self, state_inputs, order_inputs, power_season):
         '''
         Call method for encoder
@@ -43,11 +42,13 @@ class Encoder(Model):
 
         # applying board state layers
         board_out = state_inputs
+        # print(board_out)
         for i in range(self.num_board_blocks):
             board_out = self.board_blocks[i].call(board_out, power_season)
 
         # applying previous order layers
         order_out = order_inputs
+        # print(order_out)
         for i in range(self.num_order_blocks):
             order_out = self.order_blocks[i].call(order_out, power_season)
 

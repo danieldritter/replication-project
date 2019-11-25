@@ -12,18 +12,19 @@ class FiLM(Layer):
         '''
 
         super(FiLM,self).__init__()
-        self.lstm1 = LSTM(64)
+        self.lstm1 = LSTM(64, activation="sigmoid")
         
         # dense layers for outputting gamma and beta tensors
         self.d1 = Dense(1)
         self.d2 = Dense(1)
 
-    def call(self,inputs):
+    def call(self, lstm_input, inputs_state):
         '''
         Call function for FiLM layer
         
         Keyword Args:
-        the inputs to the model which are season names and power names
+        lstm_input - the input to the lstm
+        inputs-state - the input of hidden states
 
         Returns:
         two tensors representing gamma values and beta values
@@ -31,8 +32,7 @@ class FiLM(Layer):
         # Maybe decide on specific activation functions here
         # Not sure on shape here
 
-        lstm_input = tf.reshape(inputs,(inputs.shape[0],inputs.shape[1],1))
-        out = self.lstm1(lstm_input,initial_state=self.lstm1.get_initial_state(inputs))
+        out = self.lstm1(lstm_input, initial_state=self.lstm1.get_initial_state(inputs_state))
 
         gamma = self.d1(out)
         beta = self.d2(out)

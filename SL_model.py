@@ -16,7 +16,7 @@ class SL_model(AbstractActor):
     The supervised learning Actor for the Diplomacy game
     '''
 
-    @tf.function
+    # @tf.function
     def loss(self, prev_order_phase_labels, probs, position_lists):
         '''
         Function to compute the loss of the SL Model
@@ -47,7 +47,7 @@ class SL_model(AbstractActor):
                 predictions = tf.convert_to_tensor([probs[i][position_lists.index(province)] for province in provinces], dtype=tf.float32)
                 loss += tf.reduce_mean(categorical_crossentropy(one_hots, predictions))
 
-        loss /= len(prev_orders_game_labels)
+        loss /= len(prev_order_phase_labels)
         return loss
 
 if __name__ == "__main__":

@@ -44,7 +44,10 @@ class AbstractActor(Model):
         state_inputs = tf.cast(state_inputs, tf.float32)
         order_inputs = tf.cast(order_inputs, tf.float32)
         enc_out = self.encoder.call(state_inputs, order_inputs, power_season)
-        dec_out = self.decoder.call(state_inputs,enc_out, season_input, board_dict)
+
+        # extracting positions and masks to use in decoder
+        pos_list, masks = self.decoder.create_pos_masks(state_inputs, season_input, board_dict) 
+        dec_out = self.decoder.call(state_inputs,enc_out, pos_list, masks)
         return dec_out
 
     def loss(self, probs, labels):
