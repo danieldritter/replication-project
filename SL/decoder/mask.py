@@ -48,7 +48,7 @@ def masked_softmax(arr, mask):
     '''
     return tf.nn.softmax(tf.math.multiply(arr, mask))
 
-def create_mask(board_state, phase, loc, board_dict):
+def create_mask(board_state, phase, locs, board_dict):
     '''
     Given a board_state, produces a mask that only includes valid orders from loc,
     based on their positions in get_order_vocabulary in state_space. Assumes playing on standard map
@@ -56,10 +56,10 @@ def create_mask(board_state, phase, loc, board_dict):
     Args:
     board_state - 81 x dilbo vector representing current board state as described in Figure 2
     phase - string indicating phase of game (e.g. 'S1901M')
-    loc - string representing location (e.g. 'PAR')
+    loc - list of strings representing locations (e.g. ['PAR', ... ])
 
     Returns:
-    Mask for zeroing out invalid orders, length is the number of orders total
+    List of Masks for zeroing out invalid orders, length is the number of orders total
     '''
 
     # create instance of Game object based on board_state
@@ -157,16 +157,18 @@ def create_mask(board_state, phase, loc, board_dict):
     for power_name in list(power_centers.keys()):
         game.set_centers(power_name, power_centers[power_name])
 
-    possible_orders_at_loc = game.get_all_possible_orders()[loc]
-    # Needs to be negative infinity to mask softmax function.
-    # Negative infinity gives nan in loss, so using very large negative number instead
-    mask_arr = np.full(ORDER_VOCABULARY_SIZE,-(10**15))
+    possible_orders = game.get_all_possible_orders()
 
-    for order in possible_orders_at_loc:
-        ix = state_space.order_to_ix(order)
-        mask_arr[ix] = 1
-    # return tf.convert_to_tensor(mask_arr, dtype=tf.float32)
-    return mask_arr
+    masks = np.full((len(locs), ORDER_VOCABULARY_SIZE),-(10**15))
+
+    for i in range(len(locs)):
+        loc = locs[i]
+        # Needs to be negative infinity to mask softmax function.
+        # Negative infinity gives nan in loss, so using very large negative number instead
+        for order in possible_orders[loc]:
+            ix = state_space.order_to_ix(order)
+            masks[i,ix] = 1
+    return np.array(masks)
 
 def test_create_mask():
     arr = np.zeros((81,35))

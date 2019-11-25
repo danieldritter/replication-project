@@ -37,7 +37,6 @@ class Decoder(Model):
         self.dense = Dense(13042, activation=None)
         self.attention_layer = Dense(self.attention_size)
 
-
     def call(self, board_states, h_enc, season_input, board_dict):
         '''
         Call method for decoder
@@ -74,9 +73,19 @@ class Decoder(Model):
 
         position_list = list(position_set)
 
+        # computing mask for masked softmax
+        masks = np.full((num_phases, len(position_list), ORDER_VOCABULARY_SIZE),-(10**15))
+        for i in range(num_phases):
+            masks[i] = create_mask(board_states[i], 
+                                   season_input[i], 
+                                   [ORDERING[loc] for loc in position_list], 
+                                   board_dict[i])
+
+
         # looping through phases of a game
         game_orders_probs = []
-        for location in position_list:
+        for j in range(len(position_list)):
+            location = position_list[j]
             position_order_probs = []
             enc_out = tf.gather(h_enc, location, axis=1)
 
@@ -91,8 +100,7 @@ class Decoder(Model):
             lstm_out, (_, _) = self.lstm(lstm_prev, hidden_state)
             logits = self.dense(lstm_out)
 
-            # computing mask for masked softmax
-            mask = np.array([create_mask(board_states[i], season_input[i], ORDERING[location],board_dict[i]) for i in range(num_phases)])
+            mask = masks[:, j]
             order_probabilities = masked_softmax(logits, mask)
 
             # TODO: get actual action taken
