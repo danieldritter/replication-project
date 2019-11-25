@@ -15,6 +15,7 @@ class SL_model(AbstractActor):
     '''
     The supervised learning Actor for the Diplomacy game
     '''
+
     def loss(self, prev_order_phase_labels, probs, position_lists):
         '''
         Function to compute the loss of the SL Model
@@ -40,6 +41,8 @@ class SL_model(AbstractActor):
                 one_hots = tf.one_hot(order_indices,depth=13042)
 
                 # predictions for province at specific phase
+                # print(probs.shape)
+                # predictions = tf.gather_nd(probs,zip([i for j in range(len(provinces))],[position_lists.index(province) for province in provinces]))
                 predictions = tf.convert_to_tensor([probs[i][position_lists.index(province)] for province in provinces], dtype=tf.float32)
                 loss += tf.reduce_mean(categorical_crossentropy(one_hots, predictions))
 
@@ -55,7 +58,7 @@ if __name__ == "__main__":
     train_summary_writer = tf.summary.create_file_writer(train_log_dir)
     # TODO: rename to train_SL()
     # retrieving data
-    state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, supply_center_owners = process.get_data("data/standard_no_press.jsonl")
+    state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, supply_center_owners, board_dict_list = process.get_data("data/standard_no_press.jsonl")
     power = "AUSTRIA"
     # initializing supervised learning model and optimizer
     model = SL_model(16, 16, power)
@@ -65,7 +68,7 @@ if __name__ == "__main__":
         # Parsing just the season(not year)
         # Not sure about these conversions
         powers_seasons = []
-
+        curr_board_dict = board_dict_list[i]
         # extracting seasons and powers for film
         for j in range(len(season_names[i])):
             # print(season_names[i][j][0])
@@ -80,7 +83,7 @@ if __name__ == "__main__":
 
         with tf.GradientTape() as tape:
             # applying SL model
-            orders_probs, position_lists = model.call(state_input, order_inputs, powers_seasons, season_input)
+            orders_probs, position_lists = model.call(state_input, order_inputs, powers_seasons, season_input, curr_board_dict)
             print(orders_probs.shape)
             if orders_probs.shape[0] != 0:
                 orders_probs = tf.transpose(orders_probs, perm=[2, 0, 3, 1])

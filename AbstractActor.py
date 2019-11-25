@@ -25,7 +25,7 @@ class AbstractActor(Model):
         self.encoder = Encoder(num_board_blocks, num_order_blocks)
         self.decoder = Decoder(power)
 
-    def call(self, state_inputs, order_inputs, power_season, season_input):
+    def call(self, state_inputs, order_inputs, power_season, season_input, board_dict):
         '''
         Function to run the SL model
 
@@ -42,9 +42,8 @@ class AbstractActor(Model):
         # casting inputs to float32
         state_inputs = tf.cast(state_inputs, tf.float32)
         order_inputs = tf.cast(order_inputs, tf.float32)
-
         enc_out = self.encoder.call(state_inputs, order_inputs, power_season)
-        dec_out = self.decoder.call(state_inputs,enc_out, season_input)
+        dec_out = self.decoder.call(state_inputs,enc_out, season_input, board_dict)
         return dec_out
 
     def loss(self, probs, labels):

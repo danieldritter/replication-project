@@ -38,7 +38,7 @@ class Decoder(Model):
         self.attention_layer = Dense(self.attention_size)
 
 
-    def call(self, board_states, h_enc, season_input):
+    def call(self, board_states, h_enc, season_input, board_dict):
         '''
         Call method for decoder
         Args:
@@ -92,7 +92,7 @@ class Decoder(Model):
             logits = self.dense(lstm_out)
 
             # computing mask for masked softmax
-            mask = np.array([create_mask(board_states[i], season_input[i], ORDERING[location]) for i in range(num_phases)])
+            mask = np.array([create_mask(board_states[i], season_input[i], ORDERING[location],board_dict[i]) for i in range(num_phases)])
             order_probabilities = masked_softmax(logits, mask)
 
             # TODO: get actual action taken
@@ -137,6 +137,7 @@ class Decoder(Model):
         position_list = [ORDERING[position] for position in position_list]
         return tf.convert_to_tensor(game_orders_probs, dtype=tf.float32), position_list
 
+    # @tf.function
     def compute_attention(self, encoder_output):
         '''
         Function to compute attention

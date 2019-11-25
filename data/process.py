@@ -47,7 +47,7 @@ def read_data(filepath):
                 phase_states.append(phase["state"])
                 phase_orders.append(phase["orders"])
                 phase_results.append(phase["results"])
-            if count == 1000:
+            if count == 10:
                 break
             count += 1
             states.append(phase_states)
@@ -406,8 +406,7 @@ def get_data(filepath):
     # print('ORDERS LIST: ', prev_orders)
     state_inputs = np.array([construct_state_matrix(game) for game in board_dict_list])
     prev_order_inputs = np.array([construct_prev_orders_matrix(game) for game in prev_orders])
-
-    return state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, supply_center_owners
+    return state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, supply_center_owners, board_dict_list
 
 if __name__ == "__main__":
     states, orders, results = read_data("standard_no_press.jsonl")

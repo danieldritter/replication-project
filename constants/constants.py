@@ -1,5 +1,6 @@
 # importing from research
 from diplomacy_research.models import state_space
+import numpy as np
 
 # grabbing adjacency matrix as integers
 A = state_space.get_adjacency_matrix("standard")
@@ -63,6 +64,8 @@ UNIT_TYPE = {
     None:[0, 0, 1]
 }
 
+INV_UNIT_TYPE = {np.argmax(v):k for k,v in UNIT_TYPE.items()}
+
 UNIT_POWER = {
     "AUSTRIA": [1, 0, 0, 0, 0, 0, 0, 0],
     "ENGLAND": [0, 1, 0, 0, 0, 0, 0, 0],
@@ -73,6 +76,8 @@ UNIT_POWER = {
     "TURKEY": [0, 0, 0, 0, 0, 0, 1, 0],
     None: [0, 0, 0, 0, 0, 0, 0, 1]
 }
+
+INV_UNIT_POWER = {np.argmax(v):k for k,v in UNIT_POWER.items()}
 
 BUILDABLE_REMOVABLE = {
     "buildable": [1, 0],
