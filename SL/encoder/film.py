@@ -12,7 +12,7 @@ class FiLM(Layer):
         '''
 
         super(FiLM,self).__init__()
-        self.lstm1 = LSTM(256)
+        self.lstm1 = LSTM(64)
         
         # dense layers for outputting gamma and beta tensors
         self.d1 = Dense(1)

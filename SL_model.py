@@ -16,6 +16,7 @@ class SL_model(AbstractActor):
     The supervised learning Actor for the Diplomacy game
     '''
 
+    @tf.function
     def loss(self, prev_order_phase_labels, probs, position_lists):
         '''
         Function to compute the loss of the SL Model
