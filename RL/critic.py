@@ -3,6 +3,7 @@ import tensorflow as tf
 from tensorflow.keras import Model
 from AbstractCritic import AbstractCritic
 from constants.constants import GAMMA
+from reward import advantage
 
 
 class CriticRL(AbstractCritic):
@@ -23,17 +24,5 @@ class CriticRL(AbstractCritic):
         Returns:
         sum(MSE(returns + V(t + n), V(t)))
         """
-        g15 = gamma ** n_step
-        loss = []
-        for i in range(len(returns) - n_step):
-            step_returns = returns[i] - (returns[i + n_step] * g15)
-            loss += (values[i + n_step] + step_returns - values[i]) ** 2
-        for i in range(len(returns) - n_step, len(returns)):
-            loss += (returns[i] - values[i]) ** 2
-        return loss
-
-
-
-
-
-    
+        advantage = advantage(values, returns n_step, gamma)
+        return np.sum(advantage ** 2)
