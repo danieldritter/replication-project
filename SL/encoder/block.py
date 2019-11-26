@@ -117,8 +117,8 @@ class GCN(Layer):
         '''
 
         # applying adjacency matrix as floats
-        inputs = tf.tensordot(inputs, self.A_matrix, axes=[[1], [0]])
-        # inputs = tf.einsum('...j,i...->...',inputs,self.A_matrix)
-        inputs = tf.transpose(inputs, (0,2,1))
+        # inputs = tf.tensordot(inputs, self.A_matrix, axes=[[1], [0]])
+        inputs = tf.einsum('ijk,j...->ijk',inputs,self.A_matrix)
+        # inputs = tf.transpose(inputs, (0,2,1))
         gcn_out = self.d1(inputs)
         return gcn_out
