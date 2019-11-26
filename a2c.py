@@ -5,10 +5,10 @@ import tensorflow as tf
 from diplomacy import Game
 from diplomacy_research.models import state_space
 from tornado import gen
-from RL.reward import Reward, get_returns
+from RL.reward import Reward, get_returns, get_average_reward
 from RL.actor import ActorRL
 from RL.critic import CriticRL
-
+from tensorflow.keras.optimizers import Adam
 
 # Killing optional CPU driver warnings
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
@@ -19,9 +19,10 @@ class A2C:
         """
         self.actor = ActorRL()
         self.critic = CriticRL()
+        self.optimizer = Adam(0.001)
 
     @gen.coroutine
-    def generate_trajectory(self, player1, player_others):
+    def generate_trajectory(self):
         game = Game()
         powers = list(game.powers)
         np.random.shuffle(powers)
@@ -34,9 +35,9 @@ class A2C:
 
         supply_centers = [{power1: game.get_centers(power1)}]
         while not game.is_game_done:
-            action_prob, order = player1.get_orders(game, power1)
-            orders_others = yield {
-                power_name: player_others.get_orders(game, power_name) for
+            action_prob, order = self.actor.get_orders(game, power1)
+            orders_others = {
+                power_name: self.actor.get_orders(game, power_name) for
                 power_name in powers_others}
 
             board = state_space.dict_to_flatten_board_state(game.current_state(), game.map)
@@ -55,25 +56,22 @@ class A2C:
 
             # local_rewards.append(reward_class.get_local_reward(power1))
             # global_rewards.append(0 if not game.is_game_done else reward_class.get_terminal_reward(power1))
-
+        rewards = get_average_reward([supply_centers])
         returns = get_returns([supply_centers]) # put in list to match shape of [bs, game_length, dict}
-        return action_probs, returns, values
+        return action_probs, returns, values, rewards
 
-    def train(self, player1, player_others, num_episodes):
+    def train(self, num_episodes):
         """
-        Training loop for A2C. Generates a complete trajectory for one episode,
+        Self-play training loop for A2C. Generates a complete trajectory for one episode,
         and then updates both the actor and critic networks using that trajectory
 
-        :param player1: class that is your player (RL Agent)
-        :param player_others: class that is other players
         :param num_episodes: number of episodes to train the networks for
-        :returns: None
+        :returns: Total reward per episode
         """
-        total_rewards = []
-        final_average = []
+        eps_rewards = []
         for eps in range(num_episodes):
             with tf.GradientTape(persistent=True) as tape:
-                action_probs, returns, values = self.generate_trajectory(player1, player_others)
+                action_probs, returns, values, rewards = self.generate_trajectory()
                 actor_loss = self.actor.loss_function(
                     action_probs, values, returns)  # + .05 * calc_entropy(policy[0])
                 critic_loss = self.critic.loss_function(
@@ -88,4 +86,6 @@ class A2C:
             self.optimizer.apply_gradients(
                 zip(critic_grad, self.critic.trainable_variables))
 
-        return total_rewards
+            eps_rewards.append(sum(rewards))
+
+        return eps_rewards
