@@ -17,8 +17,8 @@ class AbstractCritic(Model):
         Args:
         '''
         super(AbstractCritic, self).__init__()
-        self.crit1 = tf.keras.layers.Dense(256, input_shape=(-1, STATE_SIZE), activation="relu", dtype=tf.float32, name="dense1")
-        self.crit2 = tf.keras.layers.Dense(NUM_POWERS, dtype=tf.float32, name="dense2")
+        self.crit1 = tf.keras.layers.Dense(256, input_shape=(-1, STATE_SIZE), activation="relu", dtype=tf.float32)
+        self.crit2 = tf.keras.layers.Dense(NUM_POWERS, dtype=tf.float32)
 
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
 

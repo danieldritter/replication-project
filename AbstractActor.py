@@ -3,6 +3,7 @@ from tensorflow.keras import Model
 
 from SL.encoder.encoder import Encoder
 from SL.decoder.decoder import Decoder
+from tensorflow.keras.optimizers import Adam
 
 class AbstractActor(Model):
     '''
@@ -23,6 +24,7 @@ class AbstractActor(Model):
         # creating encoder and decoder networks
         self.encoder = Encoder(num_board_blocks, num_order_blocks)
         self.decoder = Decoder()
+        self.optimizer = Adam(0.001)
 
     def call(self, state_inputs, order_inputs, power_season, season_input, board_dict, power):
         '''

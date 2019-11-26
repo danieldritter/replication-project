@@ -23,7 +23,7 @@ def create_province_dict():
     return province_dict
 
 
-def read_data(filepath):
+def read_data(filepath, num_games):
     '''
     Function to read the json data
 
@@ -46,7 +46,7 @@ def read_data(filepath):
                 phase_states.append(phase["state"])
                 phase_orders.append(phase["orders"])
                 phase_results.append(phase["results"])
-            if count == 20:
+            if count == num_games:
                 break
             count += 1
             states.append(phase_states)
@@ -331,14 +331,14 @@ def construct_prev_orders_matrix(prev_orders_game_state):
         phase_matrices.append(matrix)
     return np.array(phase_matrices)
 
-def get_data(filepath):
+def get_data(filepath, num_games):
     """
 
 
     :param filepath:
     :return:
     """
-    states, orders, results = read_data(filepath)
+    states, orders, results = read_data(filepath, num_games)
     board_dict_list, season_names, supply_center_owners = parse_states(states)
     prev_orders, prev_orders_game_labels = read_orders_data(orders, board_dict_list)
     # print('ORDERS LIST: ', prev_orders)

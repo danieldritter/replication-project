@@ -13,12 +13,12 @@ from tensorflow.keras.optimizers import Adam
 # Killing optional CPU driver warnings
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 class A2C:
-    def __init__(self):
+    def __init__(self, actor_rl, critic_rl):
         """
         Initialize Actor, Critic model.
         """
-        self.actor = ActorRL()
-        self.critic = CriticRL()
+        self.actor = actor_rl
+        self.critic = critic_rl
         self.optimizer = Adam(0.001)
 
     @gen.coroutine
@@ -87,5 +87,6 @@ class A2C:
                 zip(critic_grad, self.critic.trainable_variables))
 
             eps_rewards.append(sum(rewards))
+            print("A2C training episode number:", eps)
 
         return eps_rewards
