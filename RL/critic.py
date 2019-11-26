@@ -3,7 +3,7 @@ import tensorflow as tf
 from tensorflow.keras import Model
 from AbstractCritic import AbstractCritic
 from constants.constants import GAMMA
-from reward import advantage
+from RL.reward import advantage
 
 
 class CriticRL(AbstractCritic):
@@ -24,5 +24,5 @@ class CriticRL(AbstractCritic):
         Returns:
         sum(MSE(returns + V(t + n), V(t)))
         """
-        advantage = advantage(values, returns n_step, gamma)
-        return np.sum(advantage ** 2)
+        adv = advantage(values, returns, n_step, gamma)
+        return np.sum(adv ** 2)

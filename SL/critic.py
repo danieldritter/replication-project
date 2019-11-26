@@ -41,7 +41,9 @@ class CriticSL(AbstractCritic):
             # power_one_hot = np.argmax(np.array([UNIT_POWER[power] for power in powers], dtype=np.float32), axis=)
             power_inputs.append(power_mask)
 
-        state_inputs_unrolled = [np.array([state.ravel() for state in game]) for game in state_inputs]
+        state_inputs_unrolled = [np.array([game[state_index].ravel()
+                                           for state_index in range(len(game) - 1)])
+                                 for game in state_inputs] # last state should have a value prediction
         train_data = (state_inputs_unrolled, power_inputs)
         train_labels = get_returns(supply_center_owners)
         return train_data, train_labels
@@ -63,13 +65,13 @@ class CriticSL(AbstractCritic):
         train_summary_writer = tf.summary.create_file_writer(train_log_dir)
 
         train_data, train_labels = self.process_data(state_inputs, supply_center_owners)
-        train_data_states = train_data[0] # shape: [bs, game_length, 81 * 35]
-        train_data_powers = train_data[1] # shape: [bs, game_length, num_powers]
+        train_data_states = train_data[0] # shape: [bs, game_length - 1, 81 * 35]
+        train_data_powers = train_data[1] # shape: [bs, NUM_POWERS, num_powers]
         num_batches = len(train_data_states)
         for batch_num in range(num_batches):
-            states_batch = train_data_states[batch_num] # states_batch shape: [game_length, (81, 35)]
+            states_batch = train_data_states[batch_num] # states_batch shape: [game_length - 1, (81, 35)]
             powers_batch = train_data_powers[batch_num] # shape: [7, num_powers]
-            labels_batch = train_labels[batch_num] # labels_batch shape: [game_length, num_powers]
+            labels_batch = train_labels[batch_num] # labels_batch shape: [game_length - 1, num_powers]
 
             # shuffle within minibatch
             tf.random.shuffle(states_batch, seed=1)
@@ -77,7 +79,7 @@ class CriticSL(AbstractCritic):
             tf.random.shuffle(labels_batch, seed=1)
 
             with tf.GradientTape() as tape:
-                predicted_values = self.call(states_batch) # shape: [game_length, 7]
+                predicted_values = self.call(states_batch) # shape: [game_length - 1, 7]
 
                 # mask out any powers not playing
                 predicted_values_masked = tf.boolean_mask(predicted_values, powers_batch, axis=1)

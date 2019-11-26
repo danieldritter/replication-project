@@ -4,10 +4,10 @@
 # proportionally to the number of supply centers).
 import numpy as np
 from constants.constants import NUM_POWERS, GAMMA
+from data.process import get_data
 
 class Reward():
     def __init__(self, game):
-        # TODO: how to "average" the local and terminal rewards?
         self.game = game
         self.prev_supply_centers_dist = game.get_centers()
 
@@ -15,8 +15,6 @@ class Reward():
         old_owned_centers = self.prev_supply_centers_dist[power_name]
         new_owned_centers = self.game.get_centers(power_name)
         reward = len(new_owned_centers) - len(old_owned_centers)
-        #print(
-        #    f"Old {power_name}: {old_owned_centers}, New {power_name}: {new_owned_centers}")
         self.prev_supply_centers_dist[power_name] = self.game.get_centers(power_name)
         return reward
 
@@ -64,6 +62,9 @@ def get_average_reward(supply_center_owners_per_game):
     for phase in range(game_length - 1, 0, -1):
         local_rewards[phase] -= local_rewards[phase - 1]
 
+    local_rewards = local_rewards[1:]
+    terminal_rewards = terminal_rewards[1:]
+
     return (local_rewards + terminal_rewards) / 2
 
 def get_returns(supply_center_owners, gamma=0.99):
@@ -81,12 +82,11 @@ def get_returns(supply_center_owners, gamma=0.99):
     """
     batch_returns = []
     for supply_center_owners_per_game in supply_center_owners:
-        game_length = len(supply_center_owners_per_game)
         game_rewards = get_average_reward(
-            supply_center_owners_per_game)  # shape: (game_length, num_powers)
-        game_returns = np.zeros_like(game_rewards)
+            supply_center_owners_per_game)  # shape: (game_length - 1, num_powers)
+        game_returns = np.zeros_like(game_rewards - 1)
         game_returns[-1] = game_rewards[-1]
-        for i in range(game_length - 2, -1, -1):
+        for i in range(len(game_returns) - 2, -1, -1):
             game_returns[i] = game_rewards[i] + gamma * game_returns[i + 1]
 
         batch_returns.append(game_returns)
@@ -112,3 +112,7 @@ def advantage(values, returns, n_step=15, gamma=GAMMA):
     for i in range(len(returns) - n_step, len(returns)):
         loss_list.append((returns[i] - values[i]))
     return loss_list
+
+if __name__ == "__main__":
+    state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, supply_center_owners, board_dict_list = get_data("../data/standard_no_press.jsonl")
+    get_returns(supply_center_owners)

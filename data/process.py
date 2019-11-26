@@ -1,7 +1,6 @@
 import numpy as np
 import jsonlines
 from constants.constants import COASTS, WATER, ORDERING, OG_SUPPLY_CENTERS, UNIT_TYPE, UNIT_POWER, AREA_TYPE, ORDER_TYPE, NUM_POWERS
-from RL.reward import Reward
 def create_province_dict():
     '''
     Function to construct a dictionary of province names
@@ -350,4 +349,3 @@ def get_data(filepath):
 if __name__ == "__main__":
     states, orders, results = read_data("standard_no_press.jsonl")
     board_dict_list, season_names = parse_states(states)
-    get_returns(board_dict_list)

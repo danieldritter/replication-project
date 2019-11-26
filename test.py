@@ -88,7 +88,7 @@ def main():
             game.set_orders(power_name, power_orders)
         game.process()
         print(reward_class.get_local_reward_all_powers())
-
+        input()
     print(reward_class.get_terminal_reward_all_powers())
 
     print(game.outcome)

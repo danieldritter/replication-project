@@ -7,9 +7,9 @@ from tensorflow.keras.optimizers import Adam
 from data import process
 from SL.encoder.encoder import Encoder
 from SL.decoder.decoder import Decoder
-from constants.constants import SEASON, UNIT_POWER, ORDER_DICT
+from constants.constants import SEASON, UNIT_POWER, ORDER_DICT, GAMMA
 from AbstractActor import AbstractActor
-from reward import advantage
+from RL.reward import advantage
 
 
 class ActorRL(AbstractActor):
@@ -33,8 +33,8 @@ class ActorRL(AbstractActor):
         '''
         assert len(action_probs) == len(values)
         assert len(action_probs) == len(returns)
-        advantage = advantage(values, returns, n_step, gamma)
-        return -np.sum(np.log(action_probs) * advantage)
+        adv = advantage(values, returns, n_step, gamma)
+        return -np.sum(np.log(action_probs) * adv)
 
 if __name__ == "__main__":
     loss_test()
