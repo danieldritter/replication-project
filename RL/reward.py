@@ -93,3 +93,5 @@ def get_returns(supply_center_owners, gamma=0.99):
 
     return batch_returns
 
+def advantage(values, returns, n_step=15, gamma=GAMMA):
+    pass

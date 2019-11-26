@@ -96,7 +96,8 @@ def main():
     # Saving to disk
     with open('game.json', 'w') as file:
         file.write(json.dumps(to_saved_game_format(game)))
-    stop_io_loop()
+    # stop_io_loop()
 
 if __name__ == '__main__':
-    start_io_loop(main)
+    main()
+    # start_io_loop(main)

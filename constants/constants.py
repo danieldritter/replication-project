@@ -21,6 +21,7 @@ STATE_SIZE = NUM_PLACES * BOARD_FEATURES
 
 ORDER_VOCABULARY_SIZE = 13042
 
+GAMMA = 0.99
 # Predefined location order
 ORDERING = ['YOR', 'EDI', 'LON', 'LVP', 'NTH', 'WAL', 'CLY',
                       'NWG', 'ENG', 'IRI', 'NAO', 'BEL', 'DEN', 'HEL',
