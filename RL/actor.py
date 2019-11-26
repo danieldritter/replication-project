@@ -36,9 +36,5 @@ class ActorRL(AbstractActor):
         advantage = advantage(values, returns, n_step, gamma)
         return -np.sum(np.log(action_probs) * advantage)
 
-def loss_test():
-    arl = ActorTL()
-    print(arl.loss(np.array([0.25,0.25,0.25,0.25]), np.array([2,3,4,5]), np.array([2,3,4,5])))
-
 if __name__ == "__main__":
     loss_test()
