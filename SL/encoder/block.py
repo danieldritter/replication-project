@@ -40,7 +40,6 @@ class FirstBlock(Layer):
 
         gcn_out = self.gcn(block_input)
         ylbo = self.bn(gcn_out, training=is_training)
-
         # reshaping power and season then inputting
         power_season_input = tf.reshape(power_season,(power_season.shape[0],power_season.shape[1],1))
         gamma, beta = self.film(power_season_input, power_season)

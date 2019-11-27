@@ -78,6 +78,17 @@ UNIT_POWER = {
     None: [0, 0, 0, 0, 0, 0, 0, 1]
 }
 
+UNIT_POWER_RL = {
+    "A": "AUSTRIA",
+    "E": "ENGLAND",
+    "F": "FRANCE",
+    "G": "GERMANY",
+    "I": "ITALY",
+    "R": "RUSSIA",
+    "T": "TURKEY",
+    None: None
+}
+
 INV_UNIT_POWER = {np.argmax(v):k for k,v in UNIT_POWER.items()}
 
 BUILDABLE_REMOVABLE = {
@@ -105,4 +116,11 @@ SEASON = {
     "F": [0,1,0,0],
     "S": [0,0,1,0],
     "C": [0,0,0,1]
+}
+
+INT_SEASON = {
+    0: [1,0,0,0],
+    1: [0,1,0,0],
+    2: [0,0,1,0],
+    3: [0,0,0,1]
 }

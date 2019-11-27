@@ -4,6 +4,10 @@ from tensorflow.keras import Model
 from SL.encoder.encoder import Encoder
 from SL.decoder.decoder import Decoder
 from tensorflow.keras.optimizers import Adam
+from diplomacy_research.models.state_space import dict_to_flatten_board_state, dict_to_flatten_prev_orders_state, get_current_season, extract_state_proto
+from diplomacy import Game
+from constants.constants import INVERSE_ORDER_DICT, INT_SEASON, UNIT_POWER_RL, UNIT_POWER
+from data.process import parse_rl_state
 
 class AbstractActor(Model):
     '''
@@ -40,7 +44,6 @@ class AbstractActor(Model):
         Returns:
         a probability distribution over valid orders
         '''
-
         # casting inputs to float32
         state_inputs = tf.cast(state_inputs, tf.float32)
         order_inputs = tf.cast(order_inputs, tf.float32)
@@ -48,7 +51,7 @@ class AbstractActor(Model):
 
         # extracting positions and masks to use in decoder
         pos_list, masks = self.decoder.create_pos_masks(state_inputs, season_input, board_dict, power)
-        dec_out = self.decoder.call(state_inputs,enc_out, pos_list, masks)
+        dec_out = self.decoder.call(state_inputs, enc_out, pos_list, masks)
         return dec_out
 
     def loss(self, probs, labels):
@@ -79,4 +82,26 @@ class AbstractActor(Model):
                 4) If power_name is a list and with_draw == True:
                     - A list of tuples, each tuple having the list of orders and the draw boolean
         """
-        raise NotImplementedError("TODO!")
+        order_history = Game.get_phase_history(game)
+        if len(order_history) == 0:
+            prev_orders_state = tf.zeros((1,81,40),dtype=tf.float32)
+        else:
+            prev_orders_state = dict_to_flatten_prev_orders_state(order_history[-1],game.map)
+            prev_orders_state = tf.reshape(prev_orders_state,(1,81,40))
+        board_state = dict_to_flatten_board_state(game.get_state(),game.map)
+        board_state = tf.reshape(board_state,(1,81,35))
+        season = get_current_season(extract_state_proto(game))
+        state = game.get_state()
+        year = state["name"]
+        board_dict = parse_rl_state(state)
+        orders = []
+        order_probs = []
+        for power in power_names:
+            power_name = UNIT_POWER_RL[power]
+            power_season = tf.concat([UNIT_POWER[power_name],INT_SEASON[season]],axis=0)
+            power_season = tf.expand_dims(power_season,axis=0)
+            probs, position_list = self.call(board_state,prev_orders_state,power_season,[year],[board_dict],power_name)
+            order_ix = tf.argmax(probs,axis=1)
+            orders.append(INVERSE_ORDER_DICT[order_ix])
+            order_probs.append(probs[order_ix])
+        return orders,order_probs

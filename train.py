@@ -7,7 +7,7 @@ import pickle
 from a2c import A2C
 
 def set_rl_weights(new_weights, rl_model, train_data):
-    rl_model(train_data)
+    rl_model(train_data[0])
     rl_model.set_weights(new_weights)
 
 def train():
@@ -48,11 +48,12 @@ def train():
     ### LOADING ACTOR DOESN'T WORK BECAUSE YOU NEED TO CALL IT ON SOMETHING FIRST ###
     ## see https://stackoverflow.com/questions/55719047/is-loading-in-eager-tensorflow-broken-right-now
     new_weights_file = open("actor_weights.pickle", "rb")
-    new_weights = pickle.load(new_weights_file)
+    new_weights_actor = pickle.load(new_weights_file)
     weights_file.close()
 
     actor_rl = ActorRL(num_board_blocks=16, num_order_blocks=16)
-    actor_rl.set_weights(new_weights)
+    # actor_rl.call(state_inputs[0], prev_order_inputs[0], season_names[0],board_dict_list[0],"AUSTRIA")
+
     ##########################################################################
     new_weights_file = open("critic_weights.pickle","rb")
     new_weights = pickle.load(new_weights_file)
@@ -65,6 +66,8 @@ def train():
     # Train RL A2C
     print("Training A2C")
     a2c = A2C(actor_rl, critic_rl)
+    a2c.train(num_episodes=1)
+    actor_rl.set_weights(new_weights_actor)
     a2c.train(num_episodes=10)
 
     # save actor/critic RL weights

@@ -50,10 +50,8 @@ class Decoder(Model):
         '''
 
         num_phases = len(board_states)
-
         # constructing possible locations
         board_alignment_matrix = get_orderable_locs(board_dict, power)
-
         # creating set for positions owned
         position_set = set()
         for phase in board_alignment_matrix:
@@ -61,7 +59,6 @@ class Decoder(Model):
                 position_set.add(position)
 
         position_list = list(position_set)
-
         # computing mask for masked softmax
         masks = np.full((num_phases, len(position_list), ORDER_VOCABULARY_SIZE),-(10**15), dtype=np.float32)
         for i in range(num_phases):
@@ -118,7 +115,6 @@ class Decoder(Model):
 
         # creating inital LSTM hidden state
         action_taken_embedding = tf.zeros((num_phases,self.embedding_size), dtype=tf.float32)
-
         game_orders_probs = []
         for j in range(len(position_list)):
             position_order_probs = []
@@ -180,13 +176,6 @@ class Decoder(Model):
         position_list = [ORDERING[position] for position in position_list]
         return tf.convert_to_tensor(game_orders_probs, dtype=tf.float32), position_list
 
-    # @tf.function
-    def compute_attention(self, encoder_output):
-        '''
-        Function to compute attention
-        '''
-
-        return tf.zeros((encoder_output.shape[0], self.attention_size))
 
 def get_orderable_locs(board_dict_list, power):
     '''
@@ -202,7 +191,6 @@ def get_orderable_locs(board_dict_list, power):
     for phase in board_dict_list:
         phase_matrix = []
         for i in range(len(ORDERING)):
-
             province = ORDERING[i]
             # checking if unit type is not none
             if "unit_type" in phase[province]:

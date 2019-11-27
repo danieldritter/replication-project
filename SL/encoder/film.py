@@ -13,7 +13,7 @@ class FiLM(Layer):
 
         super(FiLM,self).__init__()
         self.lstm1 = LSTM(64, activation="sigmoid")
-        
+
         # dense layers for outputting gamma and beta tensors
         self.d1 = Dense(1)
         self.d2 = Dense(1)
@@ -21,7 +21,7 @@ class FiLM(Layer):
     def call(self, lstm_input, inputs_state):
         '''
         Call function for FiLM layer
-        
+
         Keyword Args:
         lstm_input - the input to the lstm
         inputs-state - the input of hidden states
@@ -31,7 +31,8 @@ class FiLM(Layer):
         '''
         # Maybe decide on specific activation functions here
         # Not sure on shape here
-
+        lstm_input = tf.cast(lstm_input,tf.float32)
+        inputs_state = tf.cast(inputs_state,tf.float32)
         out = self.lstm1(lstm_input, initial_state=self.lstm1.get_initial_state(inputs_state))
 
         gamma = self.d1(out)
