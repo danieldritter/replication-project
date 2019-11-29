@@ -68,7 +68,7 @@ def train():
     a2c = A2C(actor_rl, critic_rl)
     a2c.train(num_episodes=1)
     actor_rl.set_weights(new_weights_actor)
-    a2c.train(num_episodes=10)
+    a2c.train(num_episodes=1)
 
     # save actor/critic RL weights
     print("Saving RL actor/critic weights")

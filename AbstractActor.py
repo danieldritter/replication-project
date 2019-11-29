@@ -4,7 +4,7 @@ from tensorflow.keras import Model
 from SL.encoder.encoder import Encoder
 from SL.decoder.decoder import Decoder
 from tensorflow.keras.optimizers import Adam
-from diplomacy_research.models.state_space import dict_to_flatten_board_state, dict_to_flatten_prev_orders_state, get_current_season, extract_state_proto
+from diplomacy_research.models.state_space import dict_to_flatten_board_state, dict_to_flatten_prev_orders_state, get_current_season, extract_state_proto, proto_to_prev_orders_state, extract_phase_history_proto
 from diplomacy import Game
 from constants.constants import INVERSE_ORDER_DICT, INT_SEASON, UNIT_POWER_RL, UNIT_POWER
 from data.process import parse_rl_state
@@ -85,11 +85,12 @@ class AbstractActor(Model):
         # num_dummies/tiling is hacky way to get around TF Strided Slice error
         # that occurs when only passing in one state (e.g. batch size of 1)
         num_dummies = 2
-        order_history = Game.get_phase_history(game)
+        order_history = extract_phase_history_proto(game)
         if len(order_history) == 0:
             prev_orders_state = tf.zeros((1, 81, 40), dtype=tf.float32)
         else:
-            prev_orders_state = dict_to_flatten_prev_orders_state(order_history[-1], game.map)
+            print(order_history)
+            prev_orders_state = proto_to_prev_orders_state(order_history[-1], game.map).flatten().tolist()
             prev_orders_state = tf.reshape(prev_orders_state, (1, 81, 40))
         prev_orders__state_with_dummies = tf.tile(prev_orders_state, [num_dummies, 1, 1])
         board_state = dict_to_flatten_board_state(game.get_state(), game.map)
@@ -102,8 +103,7 @@ class AbstractActor(Model):
         orders = []
         order_probs = []
         for power in power_names:
-            power_name = UNIT_POWER_RL[power]
-            power_season = tf.concat([UNIT_POWER[power_name],INT_SEASON[season]],axis=0)
+            power_season = tf.concat([UNIT_POWER[power],INT_SEASON[season]],axis=0)
             power_season = tf.expand_dims(power_season,axis=0)
             power_season_with_dummies = tf.tile(power_season, [num_dummies, 1])
             probs, position_list = self.call(board_state_with_dummies,
@@ -111,8 +111,12 @@ class AbstractActor(Model):
                                              power_season_with_dummies,
                                              [year for _ in range(num_dummies)],
                                              [board_dict for _ in range(num_dummies)],
-                                             power_name)
-            order_ix = tf.argmax(probs,axis=1)
-            orders.append(INVERSE_ORDER_DICT[order_ix])
-            order_probs.append(probs[order_ix])
+                                             power)
+
+            prob_no_dummies = tf.squeeze(probs,axis=1)[:,0,:]
+            order_ix = tf.argmax(prob_no_dummies,axis=1)
+            orders_list = [INVERSE_ORDER_DICT[index] for index in order_ix.numpy()]
+            orders_probs_list = [prob_no_dummies[i][index] for i,index in enumerate(order_ix.numpy())]
+            orders.append(orders_list)
+            order_probs.append(orders_probs_list)
         return orders,order_probs

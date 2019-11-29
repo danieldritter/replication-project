@@ -35,17 +35,21 @@ class A2C:
 
         supply_centers = [{power1: game.get_centers(power1)}]
         while not game.is_game_done:
-            action_prob, order = self.actor.get_orders(game, power1)
+            order, action_prob = self.actor.get_orders(game, [power1])
             orders_others = {
-                power_name: self.actor.get_orders(game, power_name) for
+                power_name: self.actor.get_orders(game, [power_name]) for
                 power_name in powers_others}
 
-            board = state_space.dict_to_flatten_board_state(game.current_state(), game.map)
+            board = tf.convert_to_tensor(state_space.dict_to_flatten_board_state(game.get_state(), game.map),dtype=tf.float32)
+            board = tf.reshape(board,(1,81*35))
+            print("TEST")
             state_value = self.critic.call(board)
-
-            game.set_orders(power1, order)
+            # Indexing because get_orders can return a list of lists orders for multiple powers
+            game.set_orders(power1, order[0])
             for power_name, power_orders in orders_others.items():
-                game.set_orders(power_name, power_orders)
+                orders_list, probs = power_orders
+                print(orders_list)
+                game.set_orders(power_name, orders_list[0])
             game.process()
 
             # Collect data
