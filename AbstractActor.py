@@ -82,14 +82,19 @@ class AbstractActor(Model):
                 4) If power_name is a list and with_draw == True:
                     - A list of tuples, each tuple having the list of orders and the draw boolean
         """
+        # num_dummies/tiling is hacky way to get around TF Strided Slice error
+        # that occurs when only passing in one state (e.g. batch size of 1)
+        num_dummies = 2
         order_history = Game.get_phase_history(game)
         if len(order_history) == 0:
-            prev_orders_state = tf.zeros((1,81,40),dtype=tf.float32)
+            prev_orders_state = tf.zeros((1, 81, 40), dtype=tf.float32)
         else:
-            prev_orders_state = dict_to_flatten_prev_orders_state(order_history[-1],game.map)
-            prev_orders_state = tf.reshape(prev_orders_state,(1,81,40))
-        board_state = dict_to_flatten_board_state(game.get_state(),game.map)
-        board_state = tf.reshape(board_state,(1,81,35))
+            prev_orders_state = dict_to_flatten_prev_orders_state(order_history[-1], game.map)
+            prev_orders_state = tf.reshape(prev_orders_state, (1, 81, 40))
+        prev_orders__state_with_dummies = tf.tile(prev_orders_state, [num_dummies, 1, 1])
+        board_state = dict_to_flatten_board_state(game.get_state(), game.map)
+        board_state = tf.reshape(board_state, (1, 81, 35))
+        board_state_with_dummies = tf.tile(board_state, [num_dummies, 1, 1])
         season = get_current_season(extract_state_proto(game))
         state = game.get_state()
         year = state["name"]
@@ -100,7 +105,13 @@ class AbstractActor(Model):
             power_name = UNIT_POWER_RL[power]
             power_season = tf.concat([UNIT_POWER[power_name],INT_SEASON[season]],axis=0)
             power_season = tf.expand_dims(power_season,axis=0)
-            probs, position_list = self.call(board_state,prev_orders_state,power_season,[year],[board_dict],power_name)
+            power_season_with_dummies = tf.tile(power_season, [num_dummies, 1])
+            probs, position_list = self.call(board_state_with_dummies,
+                                             prev_orders__state_with_dummies,
+                                             power_season_with_dummies,
+                                             [year for _ in range(num_dummies)],
+                                             [board_dict for _ in range(num_dummies)],
+                                             power_name)
             order_ix = tf.argmax(probs,axis=1)
             orders.append(INVERSE_ORDER_DICT[order_ix])
             order_probs.append(probs[order_ix])
