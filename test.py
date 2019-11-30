@@ -117,8 +117,12 @@ def main():
                 supported = order_split[s_loc+1] + " " + order_split[s_loc+2]
                 if supported not in phase.state['units'][powers1[0]]:
                     x_support_count += 1
+                    supporter = order_split[s_loc-2] + " " + order_split[s_loc-1]
+                    if phase.results[supporter] == []:
+                        eff_x_support_count += 1
 
     print("X-Support Ratio: " + str(x_support_count / support_count))
+    print("Eff-X-Support Ratio: " + str(eff_x_support_count / x_support_count))
 
 
     # Saving to disk
