@@ -89,7 +89,7 @@ class AbstractActor(Model):
         if len(order_history) == 0:
             prev_orders_state = tf.zeros((1, 81, 40), dtype=tf.float32)
         else:
-            print(order_history)
+            # print(order_history)
             prev_orders_state = proto_to_prev_orders_state(order_history[-1], game.map).flatten().tolist()
             prev_orders_state = tf.reshape(prev_orders_state, (1, 81, 40))
         prev_orders__state_with_dummies = tf.tile(prev_orders_state, [num_dummies, 1, 1])
@@ -103,6 +103,7 @@ class AbstractActor(Model):
         orders = []
         order_probs = []
         for power in power_names:
+            print(power, year)
             power_season = tf.concat([UNIT_POWER[power],INT_SEASON[season]],axis=0)
             power_season = tf.expand_dims(power_season,axis=0)
             power_season_with_dummies = tf.tile(power_season, [num_dummies, 1])
