@@ -14,7 +14,9 @@ from constants.constants import SEASON, UNIT_POWER, ORDER_DICT
 from AbstractActor import AbstractActor
 
 def set_sl_weights(new_weights, sl_model, state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, board_dict_list):
-    # Finds winning power to use in network
+    # Finds winning power to use in network (looking at 1st game)
+    i = 0
+    
     last_turn = board_dict_list[i][-1]
     prov_num_dict = defaultdict(int)
     for province in last_turn:

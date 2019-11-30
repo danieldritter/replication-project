@@ -4,6 +4,7 @@ from tornado import gen
 from RL.reward import Reward
 from diplomacy.utils.export import to_saved_game_format
 import SL_model
+from data import process
 import json
 import pickle
 
@@ -11,7 +12,7 @@ import pickle
 from diplomacy_research.models import state_space
 from diplomacy_research.players.random_player import RandomPlayer
 from diplomacy_research.players.rule_based_player import RuleBasedPlayer
-from diplomacy_research.players.rule_based_player import ModelBasedPlayer
+# from diplomacy_research.players.rule_based_player import ModelBasedPlayer
 from diplomacy_research.utils.cluster import start_io_loop, stop_io_loop
 
 # grabbing adjacency matrix
@@ -70,8 +71,8 @@ def main():
     state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, supply_center_owners, board_dict_list = process.get_data("data/standard_no_press.jsonl", num_games=100)
     weights_file = open("sl_weights_50_chunks.pickle", "rb+")
     weights = pickle.load(weights_file)
-    sl_model = SL_model(16, 16)
-    set_sl_weights(weights, sl_model, state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, board_dict_list)
+    sl_model = SL_model.SL_model(16, 16)
+    SL_model.set_sl_weights(weights, sl_model, state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, board_dict_list)
 
     """ Plays a local game with 7 bots """
     player1 = RandomPlayer() # Use main player here x1
