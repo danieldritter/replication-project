@@ -47,7 +47,7 @@ def train():
     print("Loading actor, critic weights ready for RL training")
     ### LOADING ACTOR DOESN'T WORK BECAUSE YOU NEED TO CALL IT ON SOMETHING FIRST ###
     ## see https://stackoverflow.com/questions/55719047/is-loading-in-eager-tensorflow-broken-right-now
-    new_weights_file = open("actor_weights.pickle", "rb")
+    new_weights_file = open("sl_weights_50_chunks.pickle", "rb")
     new_weights_actor = pickle.load(new_weights_file)
     weights_file.close()
 
