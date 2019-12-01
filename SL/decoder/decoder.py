@@ -87,6 +87,8 @@ class Decoder(Model):
         lstm_out, (_, _) = self.lstm(lstm_prev, hidden_state)
         logits = self.dense(lstm_out)
         order_probabilities = masked_softmax(logits, mask)
+        # tf.print("mask:", mask, tf.argmax(mask, axis=1), tf.reduce_max(mask, axis=1), tf.math.count_nonzero(mask, axis=1))
+        # tf.print("ops:", order_probabilities, tf.argmax(order_probabilities, axis=1), tf.reduce_max(order_probabilities, axis=1), tf.math.count_nonzero(order_probabilities, axis=1))
         return lstm_out, order_probabilities
 
 

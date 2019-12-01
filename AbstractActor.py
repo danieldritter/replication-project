@@ -51,6 +51,8 @@ class AbstractActor(Model):
 
         # extracting positions and masks to use in decoder
         pos_list, masks = self.decoder.create_pos_masks(state_inputs, season_input, board_dict, power)
+        # tf.print("MASKS:", masks, masks.shape, tf.argmax(masks, axis=1), tf.reduce_max(masks, axis=1), tf.math.count_nonzero(masks, axis=1))
+
         dec_out = self.decoder.call(state_inputs, enc_out, pos_list, masks)
         return dec_out
 

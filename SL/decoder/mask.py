@@ -46,7 +46,7 @@ def masked_softmax(arr, mask):
     Returns:
     Softmax'ed result of applying given mask to h_dec
     '''
-    return tf.nn.softmax(tf.math.multiply(arr, mask))
+    return tf.nn.softmax(tf.math.add(arr, mask))
 
 def create_mask(board_state, phase, locs, board_dict):
     '''
@@ -167,7 +167,7 @@ def create_mask(board_state, phase, locs, board_dict):
         # Negative infinity gives nan in loss, so using very large negative number instead
         for order in possible_orders[loc]:
             ix = state_space.order_to_ix(order)
-            masks[i,ix] = 1
+            masks[i,ix] = 0
     return np.array(masks)
 
 def test_create_mask():
