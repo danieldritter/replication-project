@@ -76,16 +76,14 @@ def test_SL_model():
     weights = pickle.load(weights_file)
     sl_model = SL_model.SL_model(16, 16)
     SL_model.set_sl_weights(weights, sl_model, state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, board_dict_list)
-    winners = []
     opponents = [RandomPlayer(), DummyPlayer()] #, RuleBasedPlayer(easy_ruleset)]
     for player in opponents:
-        game_winners = []
+        results_dict = {"won": 0, "most_sc": 0, "defeated": 0, "survived": 0}
         for _ in range(10):
-            game_winners.append(main(sl_model, player))
-        winners.append(game_winners)
-    print(winners)
+            results_dict[main(sl_model, player)] += 1
+    print(results_dict)
     with open('winners.json', 'w') as file:
-        file.write(json.dumps(winners))
+        file.write(json.dumps(results_dict))
 
 # Testing function based on diplomacy_research repo example
 @gen.coroutine
@@ -146,6 +144,22 @@ def main(sl_model, other_agent):
     # Saving to disk
     with open('game.json', 'w') as file:
         file.write(json.dumps(to_saved_game_format(game)))
+
+    sc_dict = reward_class.get_terminal_reward_all_powers()
+
+    if len(game.outcome) == 2 and game.outcome[-1] == powers1:
+        return "won"
+    elif len(game.outcome) == 2 and game.outcome[-1] != powers1:
+        return "defeated"
+    elif len(game.outcome) != 2 and [(k, sc_dict[k]) for k in sorted(sc_dict, key=sc_dict.get, reverse=True)][0][0] == powers1:
+        return "most_sc"
+    elif len(game.outcome) != 2 and [(k, sc_dict[k]) for k in sorted(sc_dict, key=sc_dict.get, reverse=True)][0][0] != powers1:
+        return "survived"
+
+    # won = len(game.outcome) == 2 and game.outcome[-1] == powers1
+    # defeated = len(game.outcome) == 2 and game.outcome[-1] != powers1
+    # most_sc = len(game.outcome) != 2 and [(k, sc_dict[k]) for k in sorted(sc_dict, key=sc_dict.get, reverse=True)][0][0] == powers1
+    # survived = len(game.outcome) != 2 and [(k, sc_dict[k]) for k in sorted(sc_dict, key=sc_dict.get, reverse=True)][0][0] != powers1
 
     return {"sl_model": powers1,
             "Game outcome": game.outcome,
