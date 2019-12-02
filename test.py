@@ -107,6 +107,8 @@ def main(sl_model, other_agent):
 
     # Playing game
     while not game.is_game_done:
+        if reward_class.get_terminal_reward(powers1) == 0:
+            return "defeated"
         orders1, action_prob = player1.get_orders(game, [powers1])
         # orders1 = {power_name: player1.get_orders(game, power_name) for power_name in powers1}
         orders2 = yield {power_name: player2.get_orders(game, power_name) for power_name in powers2}
