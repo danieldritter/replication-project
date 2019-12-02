@@ -69,7 +69,7 @@ water = ["ADR", "AEG", "BAL", "BAR", "BLA", "EAS", "ENG", "BOT",
 #
 #     print(test_game.outcome)
 
-
+@gen.coroutine
 def test_SL_model():
     p = Process("data/standard_no_press.jsonl")
     state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, supply_center_owners, board_dict_list = p.get_data(num_games=100)
