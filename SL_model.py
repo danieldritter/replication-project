@@ -128,32 +128,34 @@ class SL_model(AbstractActor):
             season_input = season_names[i]
 
             with tf.GradientTape() as tape:
-                # applying SL model
-                orders_probs, position_lists = self.call(state_input,
-                                                          order_inputs,
-                                                          powers_seasons,
-                                                          season_input,
-                                                          curr_board_dict,
-                                                          power)
-                # print(orders_probs.shape)
-                if orders_probs.shape[0] != 0:
-                    orders_probs = tf.transpose(orders_probs, perm=[2, 0, 3, 1])
-                    orders_probs = tf.squeeze(orders_probs)
+                try:
+                    # applying SL model
+                    orders_probs, position_lists = self.call(state_input,
+                                                              order_inputs,
+                                                              powers_seasons,
+                                                              season_input,
+                                                              curr_board_dict,
+                                                              power)
+                    # print(orders_probs.shape)
+                    if orders_probs.shape[0] != 0:
+                        orders_probs = tf.transpose(orders_probs, perm=[2, 0, 3, 1])
+                        orders_probs = tf.squeeze(orders_probs)
 
-                    # computing loss for probabilities
-                    game_loss = self.loss(prev_orders_game_labels[i],
-                                           orders_probs, position_lists, power)
-                    print(game_loss)
-                    # Add to loss tracking and record loss
-                    train_loss(game_loss)
-                    with train_summary_writer.as_default():
-                        tf.summary.scalar('loss', train_loss.result(), step=i)
-                    # optimizing
-                    gradients = tape.gradient(game_loss,
-                                              self.trainable_variables)
-                    self.optimizer.apply_gradients(
-                        zip(gradients, self.trainable_variables))
-
+                        # computing loss for probabilities
+                        game_loss = self.loss(prev_orders_game_labels[i],
+                                               orders_probs, position_lists, power)
+                        print(game_loss)
+                        # Add to loss tracking and record loss
+                        train_loss(game_loss)
+                        with train_summary_writer.as_default():
+                            tf.summary.scalar('loss', train_loss.result(), step=i)
+                        # optimizing
+                        gradients = tape.gradient(game_loss,
+                                                  self.trainable_variables)
+                        self.optimizer.apply_gradients(
+                            zip(gradients, self.trainable_variables))
+                except:
+                    continue
     # def get_orders(self, game, power_names):
 
 
