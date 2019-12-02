@@ -16,7 +16,7 @@ from AbstractActor import AbstractActor
 def set_sl_weights(new_weights, sl_model, state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, board_dict_list):
     # Finds winning power to use in network (looking at 1st game)
     i = 0
-    
+
     last_turn = board_dict_list[i][-1]
     prov_num_dict = defaultdict(int)
     for province in last_turn:
@@ -153,26 +153,26 @@ class SL_model(AbstractActor):
                                               self.trainable_variables)
                     self.optimizer.apply_gradients(
                         zip(gradients, self.trainable_variables))
-    
+
     # def get_orders(self, game, power_names):
-        
+
 
 
 if __name__ == "__main__":
     # initializing model with 16 layers of each as in original paper
     sl_model = SL_model(16, 16)
-
-    # training SL_model in chunks of 
+    processor = process.Process("data/standard_no_press.jsonl")
+    # training SL_model in chunks of
     for i in range(1000):
-        state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, supply_center_owners, board_dict_list = process.get_data("data/standard_no_press.jsonl", num_games=100)
+        state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, supply_center_owners, board_dict_list = processor.get_data(num_games=100)
         sl_model.train(state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, board_dict_list)
-            
+
         # saving weights of SL model
         weights_file = open("sl_weights.pickle","wb+")
         pickle.dump(sl_model.get_weights(), weights_file)
         weights_file.close()
         print("Chunk %d" % (i))
-    
+
     # setting weights of model
     new_weights_file = open("sl_weights.pickle","rb+")
     new_weights = pickle.load(new_weights_file)

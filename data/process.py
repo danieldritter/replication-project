@@ -1,6 +1,59 @@
 import numpy as np
 import jsonlines
 from constants.constants import COASTS, WATER, ORDERING, OG_SUPPLY_CENTERS, UNIT_TYPE, UNIT_POWER, AREA_TYPE, ORDER_TYPE, NUM_POWERS
+
+class Process:
+
+    def __init__(self,filepath):
+        self.file = jsonlines.open(filepath)
+
+    def read_data(self,num_games):
+        '''
+        Function to read the json data
+
+        Keyword Args:
+        filepath - the file to read from
+
+        Returns:
+        an arry of states, orders, and results from the json
+        '''
+
+        states, orders, results = [], [], []
+        count = 0
+        for game in self.file:
+            phase_states = []
+            phase_orders = []
+            phase_results = []
+
+            for phase in game["phases"]:
+                phase_states.append(phase["state"])
+                phase_orders.append(phase["orders"])
+                phase_results.append(phase["results"])
+            if count == num_games:
+                print(game)
+                break
+            count += 1
+            states.append(phase_states)
+            orders.append(phase_orders)
+            results.append(phase_results)
+
+        return states, orders, results
+
+    def get_data(self,num_games):
+        """
+
+        :param filepath:
+        :return:
+        """
+        states, orders, results = self.read_data(num_games)
+        board_dict_list, season_names, supply_center_owners = parse_states(states)
+        prev_orders, prev_orders_game_labels = read_orders_data(orders, board_dict_list)
+        # print('ORDERS LIST: ', prev_orders)
+        state_inputs = np.array([construct_state_matrix(game) for game in board_dict_list])
+        prev_order_inputs = np.array([construct_prev_orders_matrix(game) for game in prev_orders])
+        return state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, supply_center_owners, board_dict_list
+
+
 def create_province_dict():
     '''
     Function to construct a dictionary of province names
@@ -22,38 +75,6 @@ def create_province_dict():
 
     return province_dict
 
-
-def read_data(filepath, num_games):
-    '''
-    Function to read the json data
-
-    Keyword Args:
-    filepath - the file to read from
-
-    Returns:
-    an arry of states, orders, and results from the json
-    '''
-
-    states, orders, results = [], [], []
-    count = 0
-    # TODO: Probably need to separate by turn here
-    with jsonlines.open(filepath) as file:
-        for game in file:
-            phase_states = []
-            phase_orders = []
-            phase_results = []
-            for phase in game["phases"]:
-                phase_states.append(phase["state"])
-                phase_orders.append(phase["orders"])
-                phase_results.append(phase["results"])
-            if count == num_games:
-                break
-            count += 1
-            states.append(phase_states)
-            orders.append(phase_orders)
-            results.append(phase_results)
-
-    return states, orders, results
 
 def parse_states(states):
     '''
@@ -416,20 +437,7 @@ def construct_prev_orders_matrix(prev_orders_game_state):
         phase_matrices.append(matrix)
     return np.array(phase_matrices)
 
-def get_data(filepath, num_games):
-    """
 
-
-    :param filepath:
-    :return:
-    """
-    states, orders, results = read_data(filepath, num_games)
-    board_dict_list, season_names, supply_center_owners = parse_states(states)
-    prev_orders, prev_orders_game_labels = read_orders_data(orders, board_dict_list)
-    # print('ORDERS LIST: ', prev_orders)
-    state_inputs = np.array([construct_state_matrix(game) for game in board_dict_list])
-    prev_order_inputs = np.array([construct_prev_orders_matrix(game) for game in prev_orders])
-    return state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, supply_center_owners, board_dict_list
 
 if __name__ == "__main__":
     states, orders, results = read_data("standard_no_press.jsonl")
