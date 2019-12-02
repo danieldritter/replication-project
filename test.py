@@ -4,7 +4,7 @@ from tornado import gen
 from RL.reward import Reward
 from diplomacy.utils.export import to_saved_game_format
 import SL_model
-from data import process
+from data.process import Process
 import json
 import pickle
 
@@ -33,45 +33,46 @@ water = ["ADR", "AEG", "BAL", "BAR", "BLA", "EAS", "ENG", "BOT",
          "GOL", "HEL", "ION", "IRI", "MID", "NAT", "NTH", "NRG",
          "SKA", "TYN", "WES"]
 
-def test_game():
-    # creating multiple agents
-    # Basic test of 7 random action agents
-    test_game = Game()
-    reward_class = Reward(test_game)
-    supply_centers_dist = test_game.get_centers()
-    while not test_game.is_game_done:
-        # Getting the list of possible orders for all locations
-        possible_orders = test_game.get_all_possible_orders()
-        # print(possible_orders)
-
-        # For each power, randomly sampling a valid order
-        for power_name, power in test_game.powers.items():
-            # print(power_name, power)
-            power_orders = [random.choice(possible_orders[loc]) for loc in test_game.get_orderable_locations(power_name)
-                            if possible_orders[loc]]
-            test_game.set_orders(power_name, power_orders)
-
-
-        # Messages can be sent locally with game.add_message
-        # e.g. game.add_message(Message(sender='FRANCE',
-        #                               recipient='ENGLAND',
-        #                               message='This is a message',
-        #                               phase=self.get_current_phase(),
-        #                               time_sent=int(time.time())))
-
-        # Processing the game to move to the next phase
-        test_game.process()
-        print(test_game.phase)
-        print(reward_class.get_local_reward_all_powers())
-        input()
-
-    print(reward_class.get_terminal_reward_all_powers())
-
-    print(test_game.outcome)
+# def test_game():
+#     # creating multiple agents
+#     # Basic test of 7 random action agents
+#     test_game = Game()
+#     reward_class = Reward(test_game)
+#     supply_centers_dist = test_game.get_centers()
+#     while not test_game.is_game_done:
+#         # Getting the list of possible orders for all locations
+#         possible_orders = test_game.get_all_possible_orders()
+#         # print(possible_orders)
+#
+#         # For each power, randomly sampling a valid order
+#         for power_name, power in test_game.powers.items():
+#             # print(power_name, power)
+#             power_orders = [random.choice(possible_orders[loc]) for loc in test_game.get_orderable_locations(power_name)
+#                             if possible_orders[loc]]
+#             test_game.set_orders(power_name, power_orders)
+#
+#
+#         # Messages can be sent locally with game.add_message
+#         # e.g. game.add_message(Message(sender='FRANCE',
+#         #                               recipient='ENGLAND',
+#         #                               message='This is a message',
+#         #                               phase=self.get_current_phase(),
+#         #                               time_sent=int(time.time())))
+#
+#         # Processing the game to move to the next phase
+#         test_game.process()
+#         print(test_game.phase)
+#         print(reward_class.get_local_reward_all_powers())
+#         input()
+#
+#     print(reward_class.get_terminal_reward_all_powers())
+#
+#     print(test_game.outcome)
 
 
 def test_SL_model():
-    state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, supply_center_owners, board_dict_list = process.get_data("data/standard_no_press.jsonl", num_games=100)
+    p = Process("data/standard_no_press.jsonl")
+    state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, supply_center_owners, board_dict_list = p.get_data(num_games=100)
     weights_file = open("sl_weights_50_chunks.pickle", "rb+")
     weights = pickle.load(weights_file)
     sl_model = SL_model.SL_model(16, 16)

@@ -4,7 +4,7 @@
 # proportionally to the number of supply centers).
 import numpy as np
 from constants.constants import NUM_POWERS, GAMMA
-from data.process import get_data
+from data.process import Process
 
 class Reward():
     def __init__(self, game):
@@ -114,5 +114,6 @@ def advantage(values, returns, n_step=15, gamma=GAMMA):
     return loss_list
 
 if __name__ == "__main__":
-    state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, supply_center_owners, board_dict_list = get_data("../data/standard_no_press.jsonl")
+    p = Process("../data/standard_no_press.jsonl")
+    state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, supply_center_owners, board_dict_list = p.get_data(10)
     get_returns(supply_center_owners)
