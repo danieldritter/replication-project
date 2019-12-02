@@ -81,7 +81,8 @@ def test_SL_model():
     for player in opponents:
         results_dict = {"won": 0, "most_sc": 0, "defeated": 0, "survived": 0}
         for _ in range(10):
-            results_dict[main(sl_model, player)] += 1
+            word = yield main(sl_model, player)
+            results_dict[word] += 1
     print(results_dict)
     with open('winners.json', 'w') as file:
         file.write(json.dumps(results_dict))
