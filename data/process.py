@@ -30,7 +30,6 @@ class Process:
                 phase_orders.append(phase["orders"])
                 phase_results.append(phase["results"])
             if count == num_games:
-                print(game)
                 break
             count += 1
             states.append(phase_states)

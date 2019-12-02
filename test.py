@@ -4,7 +4,7 @@ from tornado import gen
 from RL.reward import Reward
 from diplomacy.utils.export import to_saved_game_format
 import SL_model
-from data import process
+from data.process import Process
 import json
 import pickle
 
@@ -33,59 +33,59 @@ water = ["ADR", "AEG", "BAL", "BAR", "BLA", "EAS", "ENG", "BOT",
          "GOL", "HEL", "ION", "IRI", "MID", "NAT", "NTH", "NRG",
          "SKA", "TYN", "WES"]
 
-def test_game():
-    # creating multiple agents
-    # Basic test of 7 random action agents
-    test_game = Game()
-    reward_class = Reward(test_game)
-    supply_centers_dist = test_game.get_centers()
-    while not test_game.is_game_done:
-        # Getting the list of possible orders for all locations
-        possible_orders = test_game.get_all_possible_orders()
-        # print(possible_orders)
+# def test_game():
+#     # creating multiple agents
+#     # Basic test of 7 random action agents
+#     test_game = Game()
+#     reward_class = Reward(test_game)
+#     supply_centers_dist = test_game.get_centers()
+#     while not test_game.is_game_done:
+#         # Getting the list of possible orders for all locations
+#         possible_orders = test_game.get_all_possible_orders()
+#         # print(possible_orders)
+#
+#         # For each power, randomly sampling a valid order
+#         for power_name, power in test_game.powers.items():
+#             # print(power_name, power)
+#             power_orders = [random.choice(possible_orders[loc]) for loc in test_game.get_orderable_locations(power_name)
+#                             if possible_orders[loc]]
+#             test_game.set_orders(power_name, power_orders)
+#
+#
+#         # Messages can be sent locally with game.add_message
+#         # e.g. game.add_message(Message(sender='FRANCE',
+#         #                               recipient='ENGLAND',
+#         #                               message='This is a message',
+#         #                               phase=self.get_current_phase(),
+#         #                               time_sent=int(time.time())))
+#
+#         # Processing the game to move to the next phase
+#         test_game.process()
+#         print(test_game.phase)
+#         print(reward_class.get_local_reward_all_powers())
+#         input()
+#
+#     print(reward_class.get_terminal_reward_all_powers())
+#
+#     print(test_game.outcome)
 
-        # For each power, randomly sampling a valid order
-        for power_name, power in test_game.powers.items():
-            # print(power_name, power)
-            power_orders = [random.choice(possible_orders[loc]) for loc in test_game.get_orderable_locations(power_name)
-                            if possible_orders[loc]]
-            test_game.set_orders(power_name, power_orders)
-
-
-        # Messages can be sent locally with game.add_message
-        # e.g. game.add_message(Message(sender='FRANCE',
-        #                               recipient='ENGLAND',
-        #                               message='This is a message',
-        #                               phase=self.get_current_phase(),
-        #                               time_sent=int(time.time())))
-
-        # Processing the game to move to the next phase
-        test_game.process()
-        print(test_game.phase)
-        print(reward_class.get_local_reward_all_powers())
-        input()
-
-    print(reward_class.get_terminal_reward_all_powers())
-
-    print(test_game.outcome)
-
-
+@gen.coroutine
 def test_SL_model():
-    state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, supply_center_owners, board_dict_list = process.get_data("data/standard_no_press.jsonl", num_games=100)
+    p = Process("data/standard_no_press.jsonl")
+    state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, supply_center_owners, board_dict_list = p.get_data(num_games=100)
     weights_file = open("sl_weights_50_chunks.pickle", "rb+")
     weights = pickle.load(weights_file)
     sl_model = SL_model.SL_model(16, 16)
     SL_model.set_sl_weights(weights, sl_model, state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, board_dict_list)
-    winners = []
     opponents = [RandomPlayer(), DummyPlayer()] #, RuleBasedPlayer(easy_ruleset)]
     for player in opponents:
-        game_winners = []
+        results_dict = {"won": 0, "most_sc": 0, "defeated": 0, "survived": 0}
         for _ in range(10):
-            game_winners.append(main(sl_model, player))
-        winners.append(game_winners)
-    print(winners)
+            word = yield main(sl_model, player)
+            results_dict[word] += 1
+    print(results_dict)
     with open('winners.json', 'w') as file:
-        file.write(json.dumps(winners))
+        file.write(json.dumps(results_dict))
 
 # Testing function based on diplomacy_research repo example
 @gen.coroutine
@@ -107,13 +107,16 @@ def main(sl_model, other_agent):
 
     # Playing game
     while not game.is_game_done:
+        if reward_class.get_terminal_reward(powers1) == 0:
+            return "defeated"
         orders1, action_prob = player1.get_orders(game, [powers1])
         # orders1 = {power_name: player1.get_orders(game, power_name) for power_name in powers1}
         orders2 = yield {power_name: player2.get_orders(game, power_name) for power_name in powers2}
 
         # for power_name, power_orders in orders1.items():
         # for power_name, power_orders in orders1.items():
-        game.set_orders(powers1, orders1[0])
+        if reward_class.get_terminal_reward(powers1) != 0:
+            game.set_orders(powers1, orders1[0])
         for power_name, power_orders in orders2.items():
             game.set_orders(power_name, power_orders)
         game.process()
@@ -146,6 +149,22 @@ def main(sl_model, other_agent):
     # Saving to disk
     with open('game.json', 'w') as file:
         file.write(json.dumps(to_saved_game_format(game)))
+
+    sc_dict = reward_class.get_terminal_reward_all_powers()
+
+    if len(game.outcome) == 2 and game.outcome[-1] == powers1:
+        return "won"
+    elif len(game.outcome) == 2 and game.outcome[-1] != powers1:
+        return "defeated"
+    elif len(game.outcome) != 2 and [(k, sc_dict[k]) for k in sorted(sc_dict, key=sc_dict.get, reverse=True)][0][0] == powers1:
+        return "most_sc"
+    elif len(game.outcome) != 2 and [(k, sc_dict[k]) for k in sorted(sc_dict, key=sc_dict.get, reverse=True)][0][0] != powers1:
+        return "survived"
+
+    # won = len(game.outcome) == 2 and game.outcome[-1] == powers1
+    # defeated = len(game.outcome) == 2 and game.outcome[-1] != powers1
+    # most_sc = len(game.outcome) != 2 and [(k, sc_dict[k]) for k in sorted(sc_dict, key=sc_dict.get, reverse=True)][0][0] == powers1
+    # survived = len(game.outcome) != 2 and [(k, sc_dict[k]) for k in sorted(sc_dict, key=sc_dict.get, reverse=True)][0][0] != powers1
 
     return {"sl_model": powers1,
             "Game outcome": game.outcome,

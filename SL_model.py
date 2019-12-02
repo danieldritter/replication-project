@@ -128,41 +128,48 @@ class SL_model(AbstractActor):
             season_input = season_names[i]
 
             with tf.GradientTape() as tape:
-                # applying SL model
-                orders_probs, position_lists = self.call(state_input,
-                                                          order_inputs,
-                                                          powers_seasons,
-                                                          season_input,
-                                                          curr_board_dict,
-                                                          power)
-                # print(orders_probs.shape)
-                if orders_probs.shape[0] != 0:
-                    orders_probs = tf.transpose(orders_probs, perm=[2, 0, 3, 1])
-                    orders_probs = tf.squeeze(orders_probs)
+                try:
+                    # applying SL model
+                    orders_probs, position_lists = self.call(state_input,
+                                                              order_inputs,
+                                                              powers_seasons,
+                                                              season_input,
+                                                              curr_board_dict,
+                                                              power)
+                    # print(orders_probs.shape)
+                    if orders_probs.shape[0] != 0:
+                        orders_probs = tf.transpose(orders_probs, perm=[2, 0, 3, 1])
+                        orders_probs = tf.squeeze(orders_probs)
 
-                    # computing loss for probabilities
-                    game_loss = self.loss(prev_orders_game_labels[i],
-                                           orders_probs, position_lists, power)
-                    print(game_loss)
-                    # Add to loss tracking and record loss
-                    train_loss(game_loss)
-                    with train_summary_writer.as_default():
-                        tf.summary.scalar('loss', train_loss.result(), step=i)
-                    # optimizing
-                    gradients = tape.gradient(game_loss,
-                                              self.trainable_variables)
-                    self.optimizer.apply_gradients(
-                        zip(gradients, self.trainable_variables))
-
+                        # computing loss for probabilities
+                        game_loss = self.loss(prev_orders_game_labels[i],
+                                               orders_probs, position_lists, power)
+                        print(game_loss)
+                        # Add to loss tracking and record loss
+                        train_loss(game_loss)
+                        with train_summary_writer.as_default():
+                            tf.summary.scalar('loss', train_loss.result(), step=i)
+                        # optimizing
+                        gradients = tape.gradient(game_loss,
+                                                  self.trainable_variables)
+                        self.optimizer.apply_gradients(
+                            zip(gradients, self.trainable_variables))
+                except:
+                    continue
     # def get_orders(self, game, power_names):
 
 
 
 if __name__ == "__main__":
-    # initializing model with 16 layers of each as in original paper
-    sl_model = SL_model(16, 16)
     processor = process.Process("data/standard_no_press.jsonl")
-    # training SL_model in chunks of
+    # setting weights of model
+    new_weights_file = open("sl_weights.pickle","rb+")
+    new_weights = pickle.load(new_weights_file)
+    new_weights_file.close()
+    sl_model = SL_model(16, 16)
+    state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, supply_center_owners, board_dict_list = processor.get_data(num_games=400)
+    set_sl_weights(new_weights, sl_model, state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, board_dict_list)
+    # initializing model with 16 layers of each as in original paper
     for i in range(1000):
         state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, supply_center_owners, board_dict_list = processor.get_data(num_games=100)
         sl_model.train(state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, board_dict_list)
