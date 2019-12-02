@@ -87,12 +87,19 @@ class AbstractActor(Model):
         # num_dummies/tiling is hacky way to get around TF Strided Slice error
         # that occurs when only passing in one state (e.g. batch size of 1)
         num_dummies = 2
-        order_history = extract_phase_history_proto(game)
+        order_history = extract_phase_history_proto(game,3)
         if len(order_history) == 0:
             prev_orders_state = tf.zeros((1, 81, 40), dtype=tf.float32)
         else:
             # print(order_history)
-            prev_orders_state = proto_to_prev_orders_state(order_history[-1], game.map).flatten().tolist()
+            # Getting last movement phase
+            for i in range(len(order_history)-1,-1,-1):
+                if order_history[i].name[-1] == "M":
+                    prev_movement_phase = order_history[i]
+                    break
+                else:
+                    continue
+            prev_orders_state = proto_to_prev_orders_state(prev_movement_phase, game.map).flatten().tolist()
             prev_orders_state = tf.reshape(prev_orders_state, (1, 81, 40))
         prev_orders__state_with_dummies = tf.tile(prev_orders_state, [num_dummies, 1, 1])
         board_state = dict_to_flatten_board_state(game.get_state(), game.map)
