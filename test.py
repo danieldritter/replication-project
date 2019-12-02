@@ -78,7 +78,7 @@ def test_SL_model():
     SL_model.set_sl_weights(weights, sl_model, state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, board_dict_list)
     winners = []
     opponents = [RandomPlayer(), DummyPlayer()] #, RuleBasedPlayer(easy_ruleset)]
-    for player in opponents[-1:]:
+    for player in opponents:
         game_winners = []
         for _ in range(10):
             game_winners.append(main(sl_model, player))
