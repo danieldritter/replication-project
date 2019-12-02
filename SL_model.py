@@ -161,10 +161,15 @@ class SL_model(AbstractActor):
 
 
 if __name__ == "__main__":
-    # initializing model with 16 layers of each as in original paper
-    sl_model = SL_model(16, 16)
     processor = process.Process("data/standard_no_press.jsonl")
-    # training SL_model in chunks of
+    # setting weights of model
+    new_weights_file = open("sl_weights.pickle","rb+")
+    new_weights = pickle.load(new_weights_file)
+    new_weights_file.close()
+    sl_model = SL_model(16, 16)
+    state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, supply_center_owners, board_dict_list = processor.get_data(num_games=400)
+    set_sl_weights(new_weights, sl_model, state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, board_dict_list)
+    # initializing model with 16 layers of each as in original paper
     for i in range(1000):
         state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, supply_center_owners, board_dict_list = processor.get_data(num_games=100)
         sl_model.train(state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, board_dict_list)
