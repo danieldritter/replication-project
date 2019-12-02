@@ -113,7 +113,8 @@ def main(sl_model, other_agent):
 
         # for power_name, power_orders in orders1.items():
         # for power_name, power_orders in orders1.items():
-        game.set_orders(powers1, orders1[0])
+        if reward_class.get_terminal_reward(powers1) != 0:
+            game.set_orders(powers1, orders1[0])
         for power_name, power_orders in orders2.items():
             game.set_orders(power_name, power_orders)
         game.process()
