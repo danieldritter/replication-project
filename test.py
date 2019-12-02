@@ -65,6 +65,7 @@ def test_game():
 
     print(test_game.outcome)
 
+
 # Testing function based on diplomacy_research repo example
 @gen.coroutine
 def main():
@@ -75,8 +76,8 @@ def main():
     SL_model.set_sl_weights(weights, sl_model, state_inputs, prev_order_inputs, prev_orders_game_labels, season_names, board_dict_list)
 
     """ Plays a local game with 7 bots """
-    player1 = RandomPlayer() # Use main player here x1
-    # player1 = sl_model (Use when get_orders is ready)
+    # player1 = RandomPlayer() # Use main player here x1
+    player1 = sl_model # (Use when get_orders is ready)
     player2 = RandomPlayer() # Use other player here x6
 
     game = Game()
@@ -86,21 +87,23 @@ def main():
     # For randomly choosing the power of the special player
     powers = list(game.powers)
     random.shuffle(powers)
-    powers1 = powers[0:1]
+    powers1 = powers[0]
     powers2 = powers[1:7]
 
     # Playing game
     while not game.is_game_done:
-        orders1 = yield {power_name: player1.get_orders(game, power_name) for power_name in powers1}
+        orders1, action_prob = player1.get_orders(game, [powers1])
+        # orders1 = {power_name: player1.get_orders(game, power_name) for power_name in powers1}
         orders2 = yield {power_name: player2.get_orders(game, power_name) for power_name in powers2}
 
-        for power_name, power_orders in orders1.items():
-            game.set_orders(power_name, power_orders)
+        # for power_name, power_orders in orders1.items():
+        # for power_name, power_orders in orders1.items():
+        game.set_orders(powers1, orders1[0])
         for power_name, power_orders in orders2.items():
             game.set_orders(power_name, power_orders)
         game.process()
         print(reward_class.get_local_reward_all_powers())
-        input()
+        # input()
     print(reward_class.get_terminal_reward_all_powers())
 
     print(game.outcome)
@@ -109,13 +112,13 @@ def main():
     phase_history = game.get_phase_history()
     support_count, x_support_count, eff_x_support_count = 0, 0, 0
     for phase in phase_history:
-        for order_index in range(len(phase.orders[powers1[0]])):
-            order_split = phase.orders[powers1[0]][order_index].split()
+        for order_index in range(len(phase.orders[powers1])):
+            order_split = phase.orders[powers1][order_index].split()
             if 'S' in order_split:
                 support_count += 1
                 s_loc = order_split.index('S')
                 supported = order_split[s_loc+1] + " " + order_split[s_loc+2]
-                if supported not in phase.state['units'][powers1[0]]:
+                if supported not in phase.state['units'][powers1]:
                     x_support_count += 1
                     supporter = order_split[s_loc-2] + " " + order_split[s_loc-1]
                     if phase.results[supporter] == []:
