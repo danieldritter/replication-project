@@ -15,7 +15,7 @@ cloudpickle==1.2.2
 coloredlogs==10.0
 conda==4.7.12
 conda-package-handling==1.6.0
-cryptography==2.8
+cryptography==3.2
 diplomacy==1.1.0
 -e git+https://github.com/diplomacy/research.git@6f6b4bd74372acbee15f24a73dcf7780f1cae9de#egg=diplomacy_research
 execnet==1.7.1
